@@ -1,0 +1,9 @@
+[submodule "src/usbd/tinyusb"]
+	path = src/usbd/tinyusb
+	url = https://github.com/hathach/tinyusb.git
+[submodule "src/printf"]
+	path = src/printf
+	url = https://github.com/mpaland/printf.git
+[submodule "src/usbh/USBHost_t36"]
+	path = src/usbh/USBHost_t36
+	url = https://github.com/Ryzee119/USBHost_t36.git
