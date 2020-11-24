@@ -23,10 +23,10 @@ Finally, hardly any soldering is required.
 ## Compile
 ### CLI (Requires python and python-pip)
 ```
-git clone https://github.com/Ryzee119/ogx360_teensy.git --recursive
+git clone https://github.com/Ryzee119/ogx360_t4.git --recursive
 python -m pip install --upgrade pip
 pip install platformio
-cd usb64
+cd ogx360_t4
 platformio run -e teensy41
 ```
 ### Visual Studio Code
