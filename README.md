@@ -11,6 +11,7 @@ Finally, hardly any soldering is required.
 | 1 | Teensy 4.1 | https://www.pjrc.com/store/teensy41.html |
 | 1 | USB Host Cable | https://www.pjrc.com/store/cable_usb_host_t36.html |
 | 1 | 0.1" Pin Header | https://www.pjrc.com/store/header_24x1.html |
+| 1 | Xbox to MicroUSB | https://www.chimericsystems.com/product/micro-usb-to-xbox-cable/ |
 
 ## Supported Controllers
 - Bluetooth 8bitdo/compatible controllers via the [8BitDo Wireless USB Adapter](https://www.8bitdo.com/wireless-usb-adapter/)
@@ -33,7 +34,7 @@ platformio run -e teensy41
 * Download and install [Visual Studio Code](https://code.visualstudio.com/).
 * Install the [PlatformIO IDE](https://platformio.org/platformio-ide) plugin.
 * Clone this repo recursively `git clone https://github.com/Ryzee119/usb64.git --recursive`
-* In Visual Studio Code `File > Open Folder... > usb64`
+* In Visual Studio Code `File > Open Folder... > ogx360_t4`
 * Hit build on the Platform IO toolbar (`✓`).
 
 ## Program
