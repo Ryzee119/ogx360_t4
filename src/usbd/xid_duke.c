@@ -109,6 +109,8 @@ bool xid_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t
     return true;
 }
 
+#if (XID_DUKE >= 1)
+
 bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request)
 {
     if (request->bmRequestType == 0xC1 && request->bRequest == 0x06 && request->wValue == 0x4200)
@@ -214,3 +216,5 @@ usbd_class_driver_t const *usbd_app_driver_get_cb(uint8_t *driver_count)
     *driver_count = *driver_count + 1;
     return &xid_driver;
 }
+
+#endif

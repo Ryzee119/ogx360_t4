@@ -3,7 +3,16 @@
 #include "tusb.h"
 #include "printf.h"
 
+#if ((XID_XMU + XID_DUKE) == 0)
+#error You must enable ateast one device
+#endif
+
+#if ((XID_XMU + XID_DUKE) >= 2)
+#error You can only enable one USB device at a time.
+#endif
+
 #include "xid_duke.h"
+#include "xid_xmu.h"
 
 //USB Device Interface
 USB_XboxGamepad_InReport_t xpad_data;
@@ -35,6 +44,10 @@ void setup()
     //Set onboard LED to output
     pinMode(LED_BUILTIN, OUTPUT);
 
+#if defined(__IMXRT1062__) && defined(USE_EXT_FLASH) && (XID_XMU >= 1)
+    flash_init();
+#endif
+
     //USB Device Interface Init
     NVIC_DISABLE_IRQ(IRQ_USB1);
     USB1_USBCMD |= USB_USBCMD_RST;
@@ -56,6 +69,7 @@ void loop()
     //Handle USB Device Events
     tud_task();
 
+#if (XID_DUKE >= 1)
     //Get USB Host Events and send to USB
     if (xid_send_report_ready() && joy.available()) //FIXME; Check if EP is ready instead of waiting 8ms
     {
@@ -300,4 +314,5 @@ void loop()
             joy.setRumble(l_rumble, r_rumble, 0x00);
         }
     }
+#endif
 }
