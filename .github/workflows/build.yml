@@ -56,18 +56,18 @@ jobs:
       id: upload-release-asset1
       uses: actions/upload-release-asset@v1
       with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: .pio/build/XMU/firmware.hex
-          asset_name: firmware-XMU.hex
-          asset_content_type: application/hex
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: .pio/build/XMU/firmware.hex
+        asset_name: firmware-XMU.hex
+        asset_content_type: application/hex
 
     - name: Upload binary to release (DUKE)
       id: upload-release-asset2
       uses: actions/upload-release-asset@v1
       with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: .pio/build/DUKE/firmware.hex
-          asset_name: firmware-DUKE.hex
-          asset_content_type: application/hex
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: .pio/build/DUKE/firmware.hex
+        asset_name: firmware-DUKE.hex
+        asset_content_type: application/hex
 
           
