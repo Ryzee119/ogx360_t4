@@ -1,0 +1,74 @@
+name: Build
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BUILD_TAG: 0
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v1
+    
+    - name: Checkout submodules
+      run: |
+        git submodule init
+        git submodule update
+        - I dont get this recursively as it has alot of unused submodules
+        cd src/usbd/tinyusb
+        git submodule init hw/mcu/nxp/
+        git submodule update
+        cd ../../../        
+
+    - name: Set up Python
+      uses: actions/setup-python@v1
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install platformio
+        export BUILD_TAG=build-$(date -u +'%Y%m%d%H%M')
+        echo "BUILD_TAG=$BUILD_TAG" >> $GITHUB_ENV
+        
+    - name: Compile code
+      run: platformio run
+
+    - if: github.event_name == 'push' 
+      name: Create Release
+      id: create_release
+      uses: "actions/create-release@v1"
+      with:
+        tag_name: ${{ env.BUILD_TAG }}
+        release_name: ${{ env.BUILD_TAG }}
+        draft: false
+        prerelease: false
+ 
+    - name: Upload binary to release (XMU)
+      id: upload-release-asset1
+      uses: actions/upload-release-asset@v1
+      with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: .pio/build/XMU/firmware.hex
+          asset_name: firmware-XMU.hex
+          asset_content_type: application/hex
+
+    - name: Upload binary to release (DUKE)
+      id: upload-release-asset2
+      uses: actions/upload-release-asset@v1
+      with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: .pio/build/DUKE/firmware.hex
+          asset_name: firmware-DUKE.hex
+          asset_content_type: application/hex
+
+          
