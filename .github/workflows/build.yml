@@ -24,7 +24,6 @@ jobs:
       run: |
         git submodule init
         git submodule update
-        - I dont get this recursively as it has alot of unused submodules
         cd src/usbd/tinyusb
         git submodule init hw/mcu/nxp/
         git submodule update
