@@ -13,7 +13,7 @@ Finally, hardly any soldering is required.
 | 1 | Teensy 4.1 | https://www.pjrc.com/store/teensy41.html |
 | 1 | USB Host Cable | https://www.pjrc.com/store/cable_usb_host_t36.html |
 | 1 | 0.1" Pin Header | https://www.pjrc.com/store/header_24x1.html |
-| 1 | Winbond W25Q128 SPI Flash (128Mbit) | - |
+| 1 | Winbond W25Q128 SPI Flash (128Mbit) | (Only needed for XMU emulation) |
 | 1 | Xbox to MicroUSB | [ChimericSystems](https://www.chimericsystems.com/product/micro-usb-to-xbox-cable/) or [Alibaba (Large MOQ!)](https://www.alibaba.com/product-detail/for-XBOX-MicroUSB-Cable-for-Xbox_62222784495.html) or DIY |
 
 ## Supported Controllers
