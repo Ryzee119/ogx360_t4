@@ -1,5 +1,7 @@
 ## ogx360_t4
-A port of https://github.com/Ryzee119/ogx360.git, a project to use modern USB game controllers on the original Xbox console to the Teensy4.1.. 
+![Build](https://github.com/Ryzee119/ogx360_t4/workflows/Build/badge.svg)
+
+A port of https://github.com/Ryzee119/ogx360.git, a project to use modern USB game controllers on the original Xbox console to the Teensy4.1.  
 
 The has a new USB Host Stack, USB Device Stack and significantly more processing power which opens up future possibilities of emulating xbox live headsets, Xbox memory units and supporting far more USB devices.
 
@@ -11,6 +13,7 @@ Finally, hardly any soldering is required.
 | 1 | Teensy 4.1 | https://www.pjrc.com/store/teensy41.html |
 | 1 | USB Host Cable | https://www.pjrc.com/store/cable_usb_host_t36.html |
 | 1 | 0.1" Pin Header | https://www.pjrc.com/store/header_24x1.html |
+| 1 | Winbond W25Q128 SPI Flash (128Mbit) | (Only needed for XMU emulation) |
 | 1 | Xbox to MicroUSB | [ChimericSystems](https://www.chimericsystems.com/product/micro-usb-to-xbox-cable/) or [Alibaba (Large MOQ!)](https://www.alibaba.com/product-detail/for-XBOX-MicroUSB-Cable-for-Xbox_62222784495.html) or DIY |
 
 ## Supported Controllers
