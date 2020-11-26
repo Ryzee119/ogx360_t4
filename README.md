@@ -31,7 +31,10 @@ git clone https://github.com/Ryzee119/ogx360_t4.git --recursive
 python -m pip install --upgrade pip
 pip install platformio
 cd ogx360_t4
-platformio run -e teensy41
+# Build XMU (memory unit) emulator
+platformio run -e XMU
+# Build controller translator
+platformio run -e DUKE
 ```
 ### Visual Studio Code
 * Download and install [Visual Studio Code](https://code.visualstudio.com/).
