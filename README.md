@@ -16,13 +16,18 @@ Finally, hardly any soldering is required.
 | 1 | Winbond W25Q128 SPI Flash (128Mbit) | (Only needed for XMU emulation) |
 | 1 | Xbox to MicroUSB | [ChimericSystems](https://www.chimericsystems.com/product/micro-usb-to-xbox-cable/) or [Alibaba (Large MOQ!)](https://www.alibaba.com/product-detail/for-XBOX-MicroUSB-Cable-for-Xbox_62222784495.html) or DIY |
 
-## Supported Controllers
+## Duke Controller Emulation: Supported Controllers
 - Bluetooth 8bitdo/compatible controllers via the [8BitDo Wireless USB Adapter](https://www.8bitdo.com/wireless-usb-adapter/)
 - Wired 8bitdo controllers when they are started in X-input mode.
-- Xbox one Wired (Genuine Only)
+- Xbox S/X Wired
+- Xbox one Wired (Genuine / PDP)
 - Xbox 360 Wired
 - Xbox 360 Wireless (Via PC USB Receiver)
 - PS4 Wired
+
+## Xbox Memory Unit Emulation (XMU): Supported Memory Interface
+- 256kB RAM Disk for testing only
+- 16MB SPI Flash chip. Requires soldering onto the designated Teensy4.1 footprint
 
 ## Compile
 ### CLI (Requires python and python-pip)
