@@ -11,7 +11,7 @@ extern "C"
 
 #if defined(__IMXRT1062__) && defined(USE_EXT_FLASH)
 #define MSC_BLOCK_SIZE 4096
-#define FLASH_CHIP_SIZE (1024 * 1024 * 8)
+#define FLASH_CHIP_SIZE (1024 * 1024 * 16) //FIXME: Autodetect from Flash ID
 #define MSC_BLOCK_NUM (FLASH_CHIP_SIZE / MSC_BLOCK_SIZE)
 #define PAGE_SIZE 256
 #else
