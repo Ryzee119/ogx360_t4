@@ -3,7 +3,7 @@
 
 A port of https://github.com/Ryzee119/ogx360.git, a project to use modern USB game controllers on the original Xbox console to the Teensy4.1.  
 
-The has a new USB Host Stack, USB Device Stack and significantly more processing power which opens up future possibilities of emulating xbox live headsets, Xbox memory units and supporting far more USB devices.
+This has a new USB Host Stack, USB Device Stack and significantly more processing power which opens up future possibilities of emulating xbox live headsets, Xbox memory units and supporting far more USB devices.
 
 Finally, hardly any soldering is required.
 
@@ -20,14 +20,14 @@ Finally, hardly any soldering is required.
 - Bluetooth 8bitdo/compatible controllers via the [8BitDo Wireless USB Adapter](https://www.8bitdo.com/wireless-usb-adapter/)
 - Wired 8bitdo controllers when they are started in X-input mode.
 - Xbox S/X Wired
-- Xbox one Wired (Genuine / PDP)
+- Xbox One Wired (Genuine / PDP)
 - Xbox 360 Wired
 - Xbox 360 Wireless (Via PC USB Receiver)
 - PS4 Wired
 
 ## Xbox Memory Unit Emulation (XMU): Supported Memory Interface
-- 256kB RAM Disk for testing only
-- 16MB SPI Flash chip. Requires soldering onto the designated Teensy4.1 footprint
+- 256kB RAM disk for testing only
+- 16MB SPI flash chip. Requires soldering onto the designated Teensy4.1 footprint.
 
 ## Compile
 ### CLI (Requires python and python-pip)
