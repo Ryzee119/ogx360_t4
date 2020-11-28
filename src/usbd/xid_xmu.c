@@ -263,7 +263,7 @@ static int32_t flash_program(uint32_t block, uint32_t offset, const void *buf, u
     while (s > 0)
     {
         int b;
-        (s < PAGE_SIZE) ? (b = size) : (b = PAGE_SIZE);
+        (s < PAGE_SIZE) ? (b = s) : (b = PAGE_SIZE);
         flexspi2_ip_command(10, 0x00800000);
         flexspi2_ip_write(11, 0x00800000 + addr, buf, b);
         buf += b;
