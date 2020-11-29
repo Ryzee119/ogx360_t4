@@ -3,9 +3,14 @@
 
 A port of https://github.com/Ryzee119/ogx360.git, a project to use modern USB game controllers on the original Xbox console to the Teensy4.1.  
 
-This has a new USB Host Stack, USB Device Stack and significantly more processing power which opens up future possibilities of emulating xbox live headsets, Xbox memory units and supporting far more USB devices.
+This has a new USB Host Stack, USB Device Stack and significantly more processing power which opens up alot more possibilities.
 
 Finally, hardly any soldering is required.
+
+## Currently can emulate
+- Duke Standard Controller
+- Official Xbox memory unit (XMU)
+- Steel Battalion Controller
 
 ## Needed Parts
 | Qty | Part Description | Link |
@@ -29,6 +34,9 @@ Finally, hardly any soldering is required.
 - 256kB RAM disk for testing only
 - 16MB SPI flash chip. Requires soldering onto the designated Teensy4.1 footprint.
 
+## Steel Battalion Controller Emulation: Supported Interface
+- Keyboard and Mouse See [this file](/src/steelbattalion.cpp) for mapping. Please improve!
+
 ## Compile
 ### CLI (Requires python and python-pip)
 ```
@@ -40,6 +48,8 @@ cd ogx360_t4
 platformio run -e XMU
 # Build controller translator
 platformio run -e DUKE
+# Build steel battalion translator
+platformio run -e STEELBATTALION
 ```
 ### Visual Studio Code
 * Download and install [Visual Studio Code](https://code.visualstudio.com/).
