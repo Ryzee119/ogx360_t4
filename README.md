@@ -66,3 +66,5 @@ platformio run -e STEELBATTALION
 ### Teensy (using Visual Studio Code)
 * Setup Visual Studio Code as per the Compile instructions.
 * Hit the program button on the Platform IO toolbar (`→`).
+
+<img src="./images/ogx360_t4.jpg" alt="usagephoto" width="75%"/>  
