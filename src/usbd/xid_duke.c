@@ -4,26 +4,28 @@
 #include "xid_duke.h"
 #include "printf.h"
 
-CFG_TUSB_MEM_ALIGN uint8_t epin_buf[64];
-CFG_TUSB_MEM_ALIGN uint8_t epout_buf[64];
-uint8_t ep_out, ep_in;
-uint8_t ep_out_size = 0, ep_in_size = 0;
+#if (XID_DUKE >= 1)
+
+static CFG_TUSB_MEM_ALIGN uint8_t epin_buf[64];
+static CFG_TUSB_MEM_ALIGN uint8_t epout_buf[64];
+static uint8_t ep_out, ep_in;
+static uint8_t ep_out_size = 0, ep_in_size = 0;
 static USB_XboxGamepad_InReport_t _xpad_data;
 static USB_XboxGamepad_OutReport_t _xpad_rumble_data;
 
-void xid_init(void)
+static void xid_init(void)
 {
     tu_memclr(epin_buf, sizeof(epin_buf));
     tu_memclr(epout_buf, sizeof(epout_buf));
 }
 
-void xid_reset(uint8_t rhport)
+static void xid_reset(uint8_t rhport)
 {
     tu_memclr(epin_buf, sizeof(epin_buf));
     tu_memclr(epout_buf, sizeof(epout_buf));
 }
 
-uint16_t xid_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, uint16_t max_len)
+static uint16_t xid_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, uint16_t max_len)
 {
     TU_VERIFY(itf_desc->bInterfaceClass == 0x58, 0);
 
@@ -95,7 +97,7 @@ bool xid_send_report(USB_XboxGamepad_InReport_t *report, uint16_t len)
     return usbd_edpt_xfer(TUD_OPT_RHPORT, ep_in, epin_buf, len);
 }
 
-bool xid_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes)
+static bool xid_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes)
 {
     (void)rhport;
     (void)result;
@@ -108,8 +110,6 @@ bool xid_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t
     }
     return true;
 }
-
-#if (XID_DUKE >= 1)
 
 bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request)
 {
