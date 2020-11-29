@@ -3,11 +3,11 @@
 #include "tusb.h"
 #include "printf.h"
 
-#if ((XID_XMU + XID_DUKE) == 0)
+#if ((XID_XMU + XID_DUKE + XID_STEELBATTALION) == 0)
 #error You must enable ateast one device
 #endif
 
-#if ((XID_XMU + XID_DUKE) >= 2)
+#if ((XID_XMU + XID_DUKE + XID_STEELBATTALION) >= 3)
 #error You can only enable one USB device at a time.
 #endif
 
@@ -15,6 +15,11 @@
 #if (XID_DUKE >= 1)
 void duke_init(void);
 void duke_task(JoystickController *joy);
+#endif
+
+#if (XID_STEELBATTALION >= 1)
+void steelbattalion_init(KeyboardController *kb, MouseController *m, JoystickController *joy);
+void steelbattalion_task(KeyboardController *kb, MouseController *m, JoystickController *joy);
 #endif
 
 #if (XID_XMU >= 1)
@@ -25,6 +30,9 @@ void xmu_task(void);
 //USB Host Interface
 USBHost usbh;
 USBHub hub1(usbh);
+USBHIDParser hid(usbh);
+KeyboardController keyboard(usbh);
+MouseController mouse(usbh);
 JoystickController joy(usbh);
 
 void _putchar(char character)
@@ -48,6 +56,11 @@ void setup()
 #if (XID_DUKE >= 1)
     duke_init();
 #endif
+
+#if (XID_STEELBATTALION >= 1)
+    steelbattalion_init(&keyboard, &mouse, &joy);
+#endif
+
 
 #if (XID_XMU >= 1)
     xmu_init();
@@ -75,6 +88,10 @@ void loop()
 
 #if (XID_DUKE >= 1)
     duke_task(&joy);
+#endif
+
+#if (XID_STEELBATTALION >= 1)
+    steelbattalion_task(&keyboard, &mouse, &joy);
 #endif
 
 #if (XID_XMU >= 1)
