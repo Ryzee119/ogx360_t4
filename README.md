@@ -9,7 +9,7 @@ Finally, hardly any soldering is required.
 
 ## Currently can emulate
 - Duke Standard Controller
-- Official Xbox memory unit (XMU)
+- Official Xbox Memory Unit (XMU)
 - Steel Battalion Controller
 
 ## Needed Parts
@@ -30,11 +30,11 @@ Finally, hardly any soldering is required.
 - Xbox 360 Wireless (Via PC USB Receiver)
 - PS4 Wired
 
-## Xbox Memory Unit Emulation (XMU): Supported Memory Interface
-- 256kB RAM disk for testing only
+## Xbox Memory Unit Emulation (XMU): Supported Memory Interfaces
+- 256kB RAM disk for testing only.
 - 16MB SPI flash chip. Requires soldering onto the designated Teensy4.1 footprint.
 
-## Steel Battalion Controller Emulation: Supported Interface
+## Steel Battalion Controller Emulation: Supported Interfaces
 - Keyboard and Mouse See [this file](/src/steelbattalion.cpp) for mapping. Please improve!
 
 ## Compile
@@ -54,7 +54,7 @@ platformio run -e STEELBATTALION
 ### Visual Studio Code
 * Download and install [Visual Studio Code](https://code.visualstudio.com/).
 * Install the [PlatformIO IDE](https://platformio.org/platformio-ide) plugin.
-* Clone this repo recursively `git clone https://github.com/Ryzee119/usb64.git --recursive`
+* Clone this repo recursively `git clone https://github.com/Ryzee119/ogx360_t4.git --recursive`
 * In Visual Studio Code `File > Open Folder... > ogx360_t4`
 * Hit build on the Platform IO toolbar (`✓`).
 
