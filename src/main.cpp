@@ -14,7 +14,7 @@
 //Forward declarations
 #if (XID_DUKE >= 1)
 void duke_init(void);
-void duke_task(JoystickController *joy);
+void duke_task(KeyboardController *kb, MouseController *m, JoystickController *joy);
 #endif
 
 #if (XID_STEELBATTALION >= 1)
@@ -87,7 +87,7 @@ void loop()
     tud_task();
 
 #if (XID_DUKE >= 1)
-    duke_task(&joy);
+    duke_task(&keyboard, &mouse, &joy);
 #endif
 
 #if (XID_STEELBATTALION >= 1)

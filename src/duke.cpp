@@ -16,8 +16,12 @@ void duke_init()
     xpad_data.bLength = sizeof(xpad_data);
 }
 
-void duke_task(JoystickController *joy)
+void duke_task(KeyboardController *kb, MouseController *m, JoystickController *joy)
 {
+    //Map keyboard and mouse to duke translater
+    (void)kb;
+    (void)m;
+
     if (xid_send_report_ready() && joy->available())
     {
         uint32_t _buttons = joy->getButtons();
