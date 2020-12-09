@@ -9,6 +9,8 @@ void xmu_init()
 {
 #if defined(__IMXRT1062__) && defined(USE_EXT_FLASH)
     flash_init();
+#elif defined (USE_SD_CARD)
+    sd_init();
 #endif
 }
 

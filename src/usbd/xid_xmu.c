@@ -15,6 +15,11 @@ static int32_t flash_read(uint32_t block, uint32_t offset, void *buf, uint32_t s
 static int32_t flash_program(uint32_t block, uint32_t offset, const void *buf, uint32_t size);
 static int32_t flash_erase(uint32_t block);
 static int32_t flash_wait(uint32_t microseconds);
+#elif defined(USE_SD_CARD)
+uint32_t sd_volume_num_blocks();
+uint32_t sd_volume_get_block_size();
+bool sd_read_sector(uint8_t *buff, uint32_t sector, uint32_t cnt);
+bool sd_write_sector(const uint8_t *buff, uint32_t sector, uint32_t cnt);
 #else
 #ifndef DMAMEM
 #define DMAMEM
@@ -47,6 +52,8 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
     TU_LOG2("READ10: lba: %i, off: %i, len: %i\r\n", lba, offset, bufsize);
 #if defined(__IMXRT1062__) && defined(USE_EXT_FLASH)
     flash_read(lba, offset, buffer, bufsize);
+#elif defined(USE_SD_CARD)
+    sd_read_sector(buffer, lba, 1);
 #else
     memcpy(buffer, &msc_ram_disk[lba * MSC_BLOCK_SIZE] + offset, bufsize);
 #endif
@@ -61,6 +68,8 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
 #if defined(__IMXRT1062__) && defined(USE_EXT_FLASH)
     flash_erase(lba);
     flash_program(lba, offset, buffer, bufsize);
+#elif defined(USE_SD_CARD)
+    sd_write_sector(buffer, lba, 1);
 #else
     memcpy(&msc_ram_disk[lba * MSC_BLOCK_SIZE] + offset, buffer, bufsize);
 #endif
