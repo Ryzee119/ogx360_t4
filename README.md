@@ -32,7 +32,8 @@ Finally, hardly any soldering is required.
 
 ## Xbox Memory Unit Emulation (XMU): Supported Memory Interfaces
 - 256kB RAM disk for testing only.
-- 16MB SPI flash chip. Requires soldering onto the designated Teensy4.1 footprint.
+- 16MB Winbond W25Q128 SPI Flash. Requires soldering onto the designated Teensy4.1 footprint.
+- SD Card installed into the Teensy4.1 SD Card slot.
 
 ## Steel Battalion Controller Emulation: Supported Interfaces
 - Keyboard and Mouse See [this file](/src/steelbattalion.cpp) for mapping. Please improve!
@@ -44,8 +45,10 @@ git clone https://github.com/Ryzee119/ogx360_t4.git --recursive
 python -m pip install --upgrade pip
 pip install platformio
 cd ogx360_t4
-# Build XMU (memory unit) emulator
-platformio run -e XMU
+# Build XMU (memory unit) emulator using different memory interfaces
+platformio run -e XMU_FLASH
+platformio run -e XMU_SDCARD
+platformio run -e XMU_RAM_TEST_ONLY
 # Build controller translator
 platformio run -e DUKE
 # Build steel battalion translator

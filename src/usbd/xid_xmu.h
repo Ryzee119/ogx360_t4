@@ -14,6 +14,9 @@ extern "C"
 #define FLASH_CHIP_SIZE (1024 * 1024 * 16) //FIXME: Autodetect from Flash ID
 #define MSC_BLOCK_NUM (FLASH_CHIP_SIZE / MSC_BLOCK_SIZE)
 #define PAGE_SIZE 256
+#elif defined(USE_SD_CARD)
+#define MSC_BLOCK_SIZE sd_volume_get_block_size()
+#define MSC_BLOCK_NUM sd_volume_num_blocks()
 #else
 //256k internal RAM usage
 #define MSC_BLOCK_SIZE 512
@@ -84,6 +87,7 @@ static const uint8_t XMU_DESC_CONFIGURATION[] =
 };
 
 bool flash_init();
+bool sd_init();
 
 #ifdef __cplusplus
 }
