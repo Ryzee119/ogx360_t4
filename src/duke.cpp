@@ -25,8 +25,8 @@ void duke_task(KeyboardController *kb, MouseController *m, JoystickController *j
     if (xid_send_report_ready() && joy->available())
     {
         uint32_t _buttons = joy->getButtons();
-        int32_t _axis[JoystickController::STANDARD_AXIS_COUNT];
-        for (uint8_t i = 0; i < JoystickController::STANDARD_AXIS_COUNT; i++)
+        int32_t _axis[JoystickController::TOTAL_AXIS_COUNT];
+        for (uint8_t i = 0; i < JoystickController::TOTAL_AXIS_COUNT; i++)
         {
             _axis[i] = joy->getAxis(i);
         }
@@ -129,6 +129,33 @@ void duke_task(KeyboardController *kb, MouseController *m, JoystickController *j
             xpad_data.R           =   _axis[4];
 
             break;
+        case JoystickController::XBOXDUKE:
+            if (_buttons & (1 << 0)) xpad_data.dButtons |= XID_DUP;
+            if (_buttons & (1 << 1)) xpad_data.dButtons |= XID_DDOWN;
+            if (_buttons & (1 << 2)) xpad_data.dButtons |= XID_DLEFT;
+            if (_buttons & (1 << 3)) xpad_data.dButtons |= XID_DRIGHT;
+            if (_buttons & (1 << 4)) xpad_data.dButtons |= XID_START;
+            if (_buttons & (1 << 5)) xpad_data.dButtons |= XID_BACK;
+            if (_buttons & (1 << 6)) xpad_data.dButtons |= XID_LS;
+            if (_buttons & (1 << 7)) xpad_data.dButtons |= XID_RS;
+
+            //Analog buttons
+            xpad_data.A     = _axis[0];
+            xpad_data.B     = _axis[1];
+            xpad_data.X     = _axis[2];
+            xpad_data.Y     = _axis[3];
+            xpad_data.BLACK = _axis[4];
+            xpad_data.WHITE = _axis[5];
+            xpad_data.L     = _axis[6];
+            xpad_data.R     = _axis[7];
+
+            //Analog Sticks
+            xpad_data.leftStickX  = _axis[8];
+            xpad_data.leftStickY  = _axis[9];
+            xpad_data.rightStickX = _axis[10];
+            xpad_data.rightStickY = _axis[11];
+
+            break;
         case JoystickController::PS3:
         case JoystickController::PS3_MOTION:
         case JoystickController::UNKNOWN: //<-Generic HID
@@ -155,8 +182,9 @@ void duke_task(KeyboardController *kb, MouseController *m, JoystickController *j
         if (update_needed)
         {
             uint8_t l_rumble, r_rumble;
-            l_rumble = max(xpad_rumble.lValue & 0xFF, xpad_rumble.lValue >> 8);
-            r_rumble = max(xpad_rumble.rValue & 0xFF, xpad_rumble.rValue >> 8);
+            l_rumble = xpad_rumble.lValue >> 8;
+            r_rumble = xpad_rumble.rValue >> 8;
+
             //XBONE have rumble values of 0-100;
             if (joy->joystickType() == JoystickController::XBOXONE)
             {
