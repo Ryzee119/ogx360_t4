@@ -93,6 +93,42 @@ void duke_task(KeyboardController *kb, MouseController *m, JoystickController *j
             break;
         //TODO Mapping for these:
         case JoystickController::PS4:
+            //D Pad button
+            switch(_axis[9])
+            {
+                case 0: xpad_data.dButtons |= XID_DUP; break;
+                case 1: xpad_data.dButtons |= XID_DUP | XID_DRIGHT; break;
+                case 2: xpad_data.dButtons |= XID_DRIGHT; break;
+                case 3: xpad_data.dButtons |= XID_DRIGHT | XID_DDOWN; break;
+                case 4: xpad_data.dButtons |= XID_DDOWN; break;
+                case 5: xpad_data.dButtons |= XID_DDOWN | XID_DLEFT; break;
+                case 6: xpad_data.dButtons |= XID_DLEFT; break;
+                case 7: xpad_data.dButtons |= XID_DLEFT | XID_DUP; break;
+            }
+
+            //Digital Buttons
+            if (_buttons & (1 << 9))  xpad_data.dButtons |= XID_START;
+            if (_buttons & (1 << 8))  xpad_data.dButtons |= XID_BACK;
+            if (_buttons & (1 << 10)) xpad_data.dButtons |= XID_LS;
+            if (_buttons & (1 << 11)) xpad_data.dButtons |= XID_RS;
+
+            //Analog buttons are converted to digital
+            if (_buttons & (1 << 4)) xpad_data.WHITE = 0xFF;
+            if (_buttons & (1 << 5)) xpad_data.BLACK = 0xFF;
+            if (_buttons & (1 << 1)) xpad_data.A = 0xFF;
+            if (_buttons & (1 << 2)) xpad_data.B = 0xFF;
+            if (_buttons & (1 << 0)) xpad_data.X = 0xFF;
+            if (_buttons & (1 << 3)) xpad_data.Y = 0xFF;
+
+            //Analog Sticks
+            xpad_data.leftStickX  =  (_axis[0] - 127) * (INT16_MAX / 128);
+            xpad_data.leftStickY  = -(_axis[1] - 127) * (INT16_MAX / 128) - 1;
+            xpad_data.rightStickX =  (_axis[2] - 127) * (INT16_MAX / 128);
+            xpad_data.rightStickY = -(_axis[5] - 127) * (INT16_MAX / 128) - 1;
+            xpad_data.L           =   _axis[3];
+            xpad_data.R           =   _axis[4];
+
+            break;
         case JoystickController::PS3:
         case JoystickController::PS3_MOTION:
         case JoystickController::UNKNOWN: //<-Generic HID
