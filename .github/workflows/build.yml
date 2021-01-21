@@ -41,3 +41,10 @@ jobs:
         
     - name: Compile code
       run: platformio run
+    
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ogx360_t4
+        path: |
+          .pio/build/
