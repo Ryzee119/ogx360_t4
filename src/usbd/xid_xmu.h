@@ -62,7 +62,7 @@ static const uint8_t XMU_DESC_CONFIGURATION[] =
         0x00, //bAlternateSetting
         0x02, //bNumEndPoints
         0x08, //bInterfaceClass
-        //Original XMU is 0x42, however to allow it to be detected in windows and the backend TinyUSB class
+        //Original XMU bInterfaceSubClass is 0x42, however to allow it to be detected in windows and the backend TinyUSB class
         //driver to detect it I set it to standard MSC subclass (0x06)
         //Ive not seen anything unique that the xbox does when 0x42 is used.
         0x06, //bInterfaceSubClass 
