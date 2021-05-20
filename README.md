@@ -11,6 +11,7 @@ Finally, hardly any soldering is required.
 - Duke Standard Controller
 - Official Xbox Memory Unit (XMU)
 - Steel Battalion Controller
+- DVD Movie Playback IR Dongle
 
 ## Needed Parts
 | Qty | Part Description | Link |
@@ -53,6 +54,8 @@ platformio run -e XMU_RAM_TEST_ONLY
 platformio run -e DUKE
 # Build steel battalion translator
 platformio run -e STEELBATTALION
+# Build IR dongle translator
+platformio run -e XREMOTE
 ```
 ### Visual Studio Code
 * Download and install [Visual Studio Code](https://code.visualstudio.com/).
