@@ -3,11 +3,11 @@
 #include "tusb.h"
 #include "printf.h"
 
-#if ((XID_XMU + XID_DUKE + XID_STEELBATTALION) == 0)
+#if ((XID_XMU + XID_DUKE + XID_STEELBATTALION + XID_XREMOTE) == 0)
 #error You must enable ateast one device
 #endif
 
-#if ((XID_XMU + XID_DUKE + XID_STEELBATTALION) >= 3)
+#if ((XID_XMU + XID_DUKE + XID_STEELBATTALION + XID_XREMOTE) > 1)
 #error You can only enable one USB device at a time.
 #endif
 
@@ -27,6 +27,11 @@ void xmu_init(void);
 void xmu_task(void);
 #endif
 
+#if (XID_XREMOTE >= 1)
+void xremote_init(void);
+void xremote_task(KeyboardController *kb, MouseController *m, JoystickController *joy);
+#endif
+
 //USB Host Interface
 USBHost usbh;
 USBHub hub1(usbh);
@@ -38,6 +43,7 @@ JoystickController joy(usbh);
 void _putchar(char character)
 {
     Serial1.write(character);
+    Serial1.flush();
 }
 
 void usbd_isr(void)
@@ -61,9 +67,12 @@ void setup()
     steelbattalion_init(&keyboard, &mouse, &joy);
 #endif
 
-
 #if (XID_XMU >= 1)
     xmu_init();
+#endif
+
+#if (XID_XREMOTE >= 1)
+    xremote_init();
 #endif
 
     //USB Device Interface Init
@@ -97,4 +106,9 @@ void loop()
 #if (XID_XMU >= 1)
     xmu_task();
 #endif
+
+#if (XID_XREMOTE >= 1)
+    xremote_task(&keyboard, &mouse, &joy);
+#endif
+
 }
