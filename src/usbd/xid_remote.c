@@ -37,8 +37,11 @@ static uint16_t xid_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, 
     if (tu_desc_type(ep_desc) == TUSB_DESC_ENDPOINT)
     {
         usbd_edpt_open(rhport, ep_desc);
-        (ep_desc->bEndpointAddress & 0x80) ? (ep_in = ep_desc->bEndpointAddress) : (ep_out = ep_desc->bEndpointAddress);
-        (ep_desc->bEndpointAddress & 0x80) ? (ep_in_size = ep_desc->wMaxPacketSize.size) : (ep_out_size = ep_desc->wMaxPacketSize.size);
+        if (ep_desc->bEndpointAddress & 0x80)
+        {
+            ep_in = ep_desc->bEndpointAddress;
+            ep_in_size = ep_desc->wMaxPacketSize.size;
+        }
     }
 
     return drv_len;
