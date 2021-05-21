@@ -11,22 +11,18 @@
 FLASHMEM uint8_t xmu_firmware[229790] = {0};
 
 static CFG_TUSB_MEM_ALIGN uint8_t epin_buf[64];
-static CFG_TUSB_MEM_ALIGN uint8_t epout_buf[64];
-static uint8_t ep_out, ep_in;
-static uint8_t ep_out_size = 0, ep_in_size = 0;
+static uint8_t ep_in;
+static uint8_t ep_in_size = 0;
 static USB_XboxRemote_InReport_t _xremote_data;
-
 
 static void xid_init(void)
 {
     tu_memclr(epin_buf, sizeof(epin_buf));
-    tu_memclr(epout_buf, sizeof(epout_buf));
 }
 
 static void xid_reset(uint8_t rhport)
 {
     tu_memclr(epin_buf, sizeof(epin_buf));
-    tu_memclr(epout_buf, sizeof(epout_buf));
 }
 
 static uint16_t xid_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, uint16_t max_len)
