@@ -9,16 +9,6 @@ extern "C"
 #include <stdint.h>
 #include "tusb.h"
 
-/* Digital Button Masks */
-#define XID_DUP (1 << 0)
-#define XID_DDOWN (1 << 1)
-#define XID_DLEFT (1 << 2)
-#define XID_DRIGHT (1 << 3)
-#define XID_START (1 << 4)
-#define XID_BACK (1 << 5)
-#define XID_LS (1 << 6)
-#define XID_RS (1 << 7)
-
 typedef struct __attribute__((packed))
 {
     uint8_t zero;
