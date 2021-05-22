@@ -6,14 +6,12 @@
 
 #if (XID_XREMOTE >= 1)
 
-//REPLACE ARRAY WITH DONGLE ROM DUMP.
-//FIXME. LOAD FROM USER SUPPLIED FILE.
-FLASHMEM uint8_t xmu_firmware[229790] = {0};
-
 static CFG_TUSB_MEM_ALIGN uint8_t epin_buf[64];
 static uint8_t ep_in;
 static uint8_t ep_in_size = 0;
 static USB_XboxRemote_InReport_t _xremote_data;
+
+uint8_t *xremote_get_rom();
 
 static void xid_init(void)
 {
@@ -108,7 +106,12 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
         if (stage == CONTROL_STAGE_SETUP)
         {
             TU_LOG1("Sending XREMOTE INFO\r\n");
-            tud_control_xfer(rhport, request, xmu_firmware, 6);
+            uint8_t *rom = xremote_get_rom();
+            if (rom == NULL)
+            {
+                return false; //STALL
+            }
+            tud_control_xfer(rhport, request, &rom[0], request->wLength);
         }
     }
     //ROM DATA (Interface 1)
@@ -116,7 +119,12 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
     {
         if (stage == CONTROL_STAGE_SETUP)
         {
-            tud_control_xfer(rhport, request, &xmu_firmware[request->wValue * 1024], request->wLength);
+            uint8_t *rom = xremote_get_rom();
+            if (rom == NULL)
+            {
+                return false; //STALL
+            }
+            tud_control_xfer(rhport, request, &rom[request->wValue * 1024], request->wLength);
         }
     }
     else
