@@ -37,6 +37,7 @@ void xremote_init()
     if (!xremote_fw_file)
     {
         printf("Error: Could not open %s\n", DONGLEROM_FILENAME);
+        sd_ok = false;
         return;
     }
 
@@ -45,6 +46,7 @@ void xremote_init()
     if (!xremote_firmware)
     {
         printf("Error: Could not malloc %d bytes for ROM\n", file_size);
+        sd_ok = false;
         return;
     }
 
@@ -57,6 +59,7 @@ void xremote_init()
     if (bytes_read != file_size)
     {
         printf("Error: Expected %d bytes from file but only read %d bytes\n", file_size, bytes_read);
+        sd_ok = false;
         return;
     }
 
