@@ -39,6 +39,10 @@ Finally, hardly any soldering is required.
 ## Steel Battalion Controller Emulation: Supported Interfaces
 - Keyboard and Mouse See [this file](/src/steelbattalion.cpp) for mapping. Please improve!
 
+## DVD Playback IR Dongle
+- To play DVDs on a Xbox console, place a file called `dvd_rom.bin` at the root of a FAT32 formatted SD card then insert it into the Teensy before power up. `dvd_rom.bin` [must be dumped](https://github.com/Ryzee119/Dongle_Dumper) from a genuine IR dongle.
+- Input is not yet fully implemented. Currently only Duke and Xbox360 D-Pad is mapped to the IR remote dpad for testing. This is very simple to fix though if needed.
+
 ## Compile
 ### CLI (Requires python and python-pip)
 ```
@@ -73,4 +77,4 @@ platformio run -e XREMOTE
 * Setup Visual Studio Code as per the Compile instructions.
 * Hit the program button on the Platform IO toolbar (`→`).
 
-<img src="./images/ogx360_t4.jpg" alt="usagephoto" width="40%"/>  
+<img src="./images/ogx360_t4.jpg" alt="usagephoto" width="80%"/>  
