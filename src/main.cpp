@@ -84,6 +84,8 @@ void setup()
     attachInterruptVector(IRQ_USB1, &usbd_isr);
     NVIC_ENABLE_IRQ(IRQ_USB1);
     tusb_init();
+     //Force Full Speed Only
+    USB1_PORTSC1 = USB_PORTSC1_PFSC;
     printf("USB Device Stack Initialised\r\n");
 
     //USB Host Interface Init
