@@ -1,10 +1,7 @@
 #include <Arduino.h>
-#include "tusb.h"
-#include "xid_steelbattalion.h"
-#include "printf.h"
-#include "USBHost_t36.h"
-
-#if (XID_STEELBATTALION >= 1)
+#include <tusb.h>
+#include <USBHost_t36.h>
+#include "xid.h"
 
 //USB Device Interface
 static USB_SteelBattalion_InReport_t sb_data;
@@ -44,9 +41,11 @@ void steelbattalion_init(KeyboardController *kb, MouseController *m, JoystickCon
     kb->attachRawRelease(key_released_cb);
 }
 
-void steelbattalion_task(KeyboardController *kb, MouseController *m, JoystickController *joy)
+void steelbattalion_task(uint8_t type_index, KeyboardController *kb, MouseController *m, JoystickController *joy)
 {
-    if (xid_send_report_ready())
+    uint8_t index = xid_get_index_by_type(type_index, XID_TYPE_STEELBATTALION);
+
+    if (xid_send_report_ready(index))
     {
         sb_data.dButtons[0]   = 0x0000;
         sb_data.dButtons[1]   = 0x0000;
@@ -147,19 +146,19 @@ void steelbattalion_task(KeyboardController *kb, MouseController *m, JoystickCon
         if (m->getButtons() & (1 << 2))       sb_data.dButtons[0] |= CXBX_SBC_GAMEPAD_W0_RIGHTJOYLOCKON;
         if (is_key_pressed(KEY_X, 0))         sb_data.dButtons[0] |= CXBX_SBC_GAMEPAD_W0_RIGHTJOYLOCKON;
 
-        if (!xid_send_report(&sb_data, sizeof(sb_data)))
+        if (!xid_send_report(index, &sb_data, sizeof(sb_data)))
         {
-            printf("[USBD] Error sending OUT report\r\n");
+            TU_LOG1("[USBD] Error sending OUT report\r\n");
         }
     }
 
-    if (xid_get_report(&sb_feedback, sizeof(sb_feedback)))
+    if (xid_get_report(index, &sb_feedback, sizeof(sb_feedback)))
     {
         static uint32_t print_timer = 0;
 
         if (millis() - print_timer > 100)
         {
-#if (1)
+#if (0)
         printf( "%c[2J", 27); //Clear terminal
         printf( "%c[H", 27);  //Set cursor to home
         printf("CockpitHatch:   %02x EmergeEject:   %02x\r\n", (sb_feedback.CockpitHatch_EmergencyEject >> 4) & 0x0F,
@@ -218,10 +217,8 @@ void steelbattalion_task(KeyboardController *kb, MouseController *m, JoystickCon
 
         printf("Gear5:          %02x Gear4:         %02x\r\n", (sb_feedback.Gear5_Gear4 >> 4) & 0x0F,
                                                                (sb_feedback.Gear5_Gear4 >> 0) & 0x0F);
+#endif
         print_timer = millis();
         }
     }
-#endif
 }
-
-#endif
