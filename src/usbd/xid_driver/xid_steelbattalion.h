@@ -1,5 +1,5 @@
-#ifndef XID_DUKE_H_
-#define XID_DUKE_H_
+#ifndef XID_STEELBATTALION_H_
+#define XID_STEELBATTALION_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -7,7 +7,7 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include "tusb.h"
+#include <tusb.h>
 
 /* https://github.com/Cxbx-Reloaded/Cxbx-Reloaded/blob/master/src/core/hle/XAPI/XapiCxbxr.h */
 #define    CXBX_SBC_GAMEPAD_W0_RIGHTJOYMAINWEAPON      0x0001
@@ -96,65 +96,15 @@ typedef struct
 	uint8_t dummy;
 } USB_SteelBattalion_OutReport_t;
 
-static const tusb_desc_device_t STEELBATTALION_DESC_DEVICE =
-    {
-        .bLength = sizeof(tusb_desc_device_t),
-        .bDescriptorType = TUSB_DESC_DEVICE,
-        .bcdUSB = 0x0110,
-        .bDeviceClass = 0x00,
-        .bDeviceSubClass = 0x00,
-        .bDeviceProtocol = 0x00,
-        .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
+#define TUD_XID_SB_DESC_LEN  (9+7+7)
 
-        .idVendor = 0x0A7B,
-        .idProduct = 0xD000,
-        .bcdDevice = 0x0100,
-
-        .iManufacturer = 0x00,
-        .iProduct = 0x00,
-        .iSerialNumber = 0x00,
-
-        .bNumConfigurations = 0x01
-};
-
-static const uint8_t STEELBATTALION_DESC_CONFIGURATION[] =
-    {
-        0x09,       //bLength
-        0x02,       //bDescriptorType
-        0x20, 0x00, //wTotalLength
-        0x01,       //bNumInterfaces
-        0x01,       //bConfigurationValue
-        0x00,       //iConfiguration
-        0x80,       //bmAttributes
-        0xFA,       //bMaxPower
-
-        //Interface Descriptor
-        0x09, //bLength
-        0x04, //bDescriptorType
-        0x00, //bInterfaceNumber
-        0x00, //bAlternateSetting
-        0x02, //bNumEndPoints
-        0x58, //bInterfaceClass
-        0x42, //bInterfaceSubClass
-        0x00, //bInterfaceProtocol
-        0x00, //iInterface
-
-        //Endpoint Descriptor
-        0x07,       //bLength
-        0x05,       //bDescriptorType
-        0x82,       //bEndpointAddress (IN endpoint 1)
-        0x03,       //bmAttributes (Transfer: Interrupt / Synch: None / Usage: Data)
-        0x20, 0x00, //wMaxPacketSize (1 x 32 bytes)
-        0x04,       //bInterval (4 frames)
-
-        //Endpoint Descriptor
-        0x07,       //bLength
-        0x05,       //bDescriptorType
-        0x01,       //bEndpointAddress (IN endpoint 1)
-        0x03,       //bmAttributes (Transfer: Interrupt / Synch: None / Usage: Data)
-        0x20, 0x00, //wMaxPacketSize (1 x 32 bytes)
-        0x04        //bInterval (4 frames)
-};
+#define TUD_XID_SB_DESCRIPTOR(_itfnum, _epout, _epin) \
+  /* Interface */\
+  9, TUSB_DESC_INTERFACE, _itfnum, 0, 2, XID_INTERFACE_CLASS, XID_INTERFACE_SUBCLASS, 0x00, 0x00,\
+  /* Endpoint In */\
+  7, TUSB_DESC_ENDPOINT, _epin, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(32), 4, \
+  /* Endpoint Out */\
+  7, TUSB_DESC_ENDPOINT, _epout, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(32), 4
 
 static const uint8_t STEELBATTALION_DESC_XID[] = {
     0x10,
@@ -167,9 +117,36 @@ static const uint8_t STEELBATTALION_DESC_XID[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-bool xid_send_report_ready(void);
-bool xid_send_report(USB_SteelBattalion_InReport_t *report, uint16_t len);
-bool xid_get_report(USB_SteelBattalion_OutReport_t *report, uint16_t len);
+static const uint8_t STEELBATTALION_CAPABILITIES_IN[] = {
+    0x00,
+    0x1A,
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF
+};
+
+static const uint8_t STEELBATTALION_CAPABILITIES_OUT[] = {
+    0x00,
+    0x16,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF
+};
 
 #ifdef __cplusplus
 }

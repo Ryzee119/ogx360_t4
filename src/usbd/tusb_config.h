@@ -85,7 +85,7 @@ extern "C"
 
 //------------- CLASS -------------//
 #define CFG_TUD_CDC 0
-#define CFG_TUD_MSC XID_XMU
+#define CFG_TUD_MSC MSC_XMU
 #define CFG_TUD_HID 0
 #define CFG_TUD_MIDI 0
 #define CFG_TUD_VENDOR 0

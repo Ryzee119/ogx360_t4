@@ -1,28 +1,25 @@
 #include <Arduino.h>
-#include "tusb.h"
-#include "xid_duke.h"
-#include "printf.h"
-#include "USBHost_t36.h"
+#include <tusb.h>
+#include <USBHost_t36.h>
+#include "xid.h"
 
-#if (XID_DUKE >= 1)
-
-//USB Device Interface
-static USB_XboxGamepad_InReport_t xpad_data;
-static USB_XboxGamepad_OutReport_t xpad_rumble;
-
-void duke_init()
+void duke_init(KeyboardController *kb, MouseController *m, JoystickController *joy)
 {
-    memset(&xpad_data, 0x00, sizeof(xpad_data));
-    xpad_data.bLength = sizeof(xpad_data);
+
 }
 
-void duke_task(KeyboardController *kb, MouseController *m, JoystickController *joy)
+void duke_task(uint8_t type_index, KeyboardController *kb, MouseController *m, JoystickController *joy)
 {
+    USB_XboxGamepad_InReport_t xpad_data;
+    USB_XboxGamepad_OutReport_t xpad_rumble;
+
     //Map keyboard and mouse to duke translater
     (void)kb;
     (void)m;
 
-    if (xid_send_report_ready() && joy->available())
+    uint8_t index = xid_get_index_by_type(type_index, XID_TYPE_GAMECONTROLLER);
+
+    if (xid_send_report_ready(index) && joy->available())
     {
         uint32_t _buttons = joy->getButtons();
         int32_t _axis[JoystickController::TOTAL_AXIS_COUNT];
@@ -163,14 +160,14 @@ void duke_task(KeyboardController *kb, MouseController *m, JoystickController *j
             break;
         }
 
-        if (!xid_send_report(&xpad_data, sizeof(xpad_data)))
+        if (!xid_send_report(index, &xpad_data, sizeof(xpad_data)))
         {
-            printf("[USBD] Error sending OUT report\r\n");
+            TU_LOG1("[USBD] Error sending OUT report\r\n");
         }
     }
 
     static uint16_t old_rumble_l, old_rumble_r;
-    if (xid_get_report(&xpad_rumble, sizeof(xpad_rumble)))
+    if (xid_get_report(index, &xpad_rumble, sizeof(xpad_rumble)))
     {
         bool update_needed = false;
         if (xpad_rumble.lValue != old_rumble_l || xpad_rumble.rValue != old_rumble_r)
@@ -195,5 +192,3 @@ void duke_task(KeyboardController *kb, MouseController *m, JoystickController *j
         }
     }
 }
-
-#endif
