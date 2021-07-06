@@ -90,8 +90,8 @@ static const uint8_t REMOTE_DESC_XID[] = {
     0x00
 };
 
-bool xid_send_report_ready(void);
-bool xid_send_report(USB_XboxRemote_InReport_t *report, uint16_t len);
+bool xid_xremote_send_report_ready(void);
+bool xid_xremote_send_report(USB_XboxRemote_InReport_t *report, uint16_t len);
 
 #ifdef __cplusplus
 }

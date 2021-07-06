@@ -1,59 +1,79 @@
 #include <Arduino.h>
-#include "tusb.h"
-#include "device/usbd_pvt.h"
+#include "xid.h"
 #include "xid_duke.h"
-#include "printf.h"
 
-#if (XID_DUKE >= 1)
+CFG_TUSB_MEM_SECTION static duke_interface_t _duke_itf[XID_DUKE];
 
-static CFG_TUSB_MEM_ALIGN uint8_t epin_buf[64];
-static CFG_TUSB_MEM_ALIGN uint8_t epout_buf[64];
-static uint8_t ep_out, ep_in;
-static uint8_t ep_out_size = 0, ep_in_size = 0;
-static USB_XboxGamepad_InReport_t _xpad_data;
-static USB_XboxGamepad_OutReport_t _xpad_rumble_data;
-
-static void xid_init(void)
+static inline uint8_t get_index_by_itfnum(uint8_t itf_num)
 {
-    tu_memclr(epin_buf, sizeof(epin_buf));
-    tu_memclr(epout_buf, sizeof(epout_buf));
+    for (uint8_t i = 0; i < XID_DUKE; i++)
+    {
+        if (itf_num == _duke_itf[i].itf_num)
+            return i;
+    }
+    return NULL;
 }
 
-static void xid_reset(uint8_t rhport)
+static inline duke_interface_t *find_available_interface()
 {
-    tu_memclr(epin_buf, sizeof(epin_buf));
-    tu_memclr(epout_buf, sizeof(epout_buf));
+    for (uint8_t i = 0; i < XID_DUKE; i++)
+    {
+        if (_duke_itf[i].ep_in == 0)
+            return &_duke_itf[i];
+    }
 }
 
-static uint16_t xid_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, uint16_t max_len)
+static void duke_init(void)
 {
-    TU_VERIFY(itf_desc->bInterfaceClass == 0x58, 0);
+    for (uint8_t i = 0; i < XID_DUKE; i++)
+    {
+        tu_memclr(&_duke_itf[i], sizeof(duke_interface_t));
+        _duke_itf->in.bLength = sizeof(USB_XboxGamepad_InReport_t);
+    }
+}
 
-    uint16_t const drv_len = sizeof(tusb_desc_interface_t) + itf_desc->bNumEndpoints * sizeof(tusb_desc_endpoint_t);
+static void duke_reset(uint8_t rhport)
+{
+    duke_init();
+}
+
+static uint16_t duke_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, uint16_t max_len)
+{
+    if (itf_desc->bInterfaceClass != XID_INTERFACE_CLASS ||
+        itf_desc->bInterfaceSubClass != XID_INTERFACE_SUBCLASS ||
+        itf_desc->bInterfaceNumber != ITF_NUM_XID_DUKE)
+    {
+        return 0;
+    }
+
+    uint16_t const drv_len = TUD_XID_DUKE_DESC_LEN;
     TU_VERIFY(max_len >= drv_len, 0);
-    tusb_desc_endpoint_t *ep_desc;
 
     //OG Xbox controllers always have two endpoints. Open both
+    duke_interface_t * p_duke = find_available_interface();
+    TU_ASSERT(p_duke, NULL);
+
+    tusb_desc_endpoint_t *ep_desc;
     ep_desc = (tusb_desc_endpoint_t *)tu_desc_next(itf_desc);
     if (tu_desc_type(ep_desc) == TUSB_DESC_ENDPOINT)
     {
         usbd_edpt_open(rhport, ep_desc);
-        (ep_desc->bEndpointAddress & 0x80) ? (ep_in = ep_desc->bEndpointAddress) : (ep_out = ep_desc->bEndpointAddress);
-        (ep_desc->bEndpointAddress & 0x80) ? (ep_in_size = ep_desc->wMaxPacketSize.size) : (ep_out_size = ep_desc->wMaxPacketSize.size);
+        (ep_desc->bEndpointAddress & 0x80) ? (p_duke->ep_in  = ep_desc->bEndpointAddress) :
+                                             (p_duke->ep_out = ep_desc->bEndpointAddress);
     }
 
     ep_desc = (tusb_desc_endpoint_t *)tu_desc_next(ep_desc);
     if (tu_desc_type(ep_desc) == TUSB_DESC_ENDPOINT)
     {
         usbd_edpt_open(rhport, ep_desc);
-        (ep_desc->bEndpointAddress & 0x80) ? (ep_in = ep_desc->bEndpointAddress) : (ep_out = ep_desc->bEndpointAddress);
-        (ep_desc->bEndpointAddress & 0x80) ? (ep_in_size = ep_desc->wMaxPacketSize.size) : (ep_out_size = ep_desc->wMaxPacketSize.size);
+        (ep_desc->bEndpointAddress & 0x80) ? (p_duke->ep_in  = ep_desc->bEndpointAddress) :
+                                             (p_duke->ep_out = ep_desc->bEndpointAddress);
     }
 
     return drv_len;
 }
 
-bool xid_get_report(USB_XboxGamepad_OutReport_t *report, uint16_t len)
+bool xid_duke_get_report(USB_XboxGamepad_OutReport_t *report, uint16_t len)
 {
     //Only support one report
     if (len != sizeof(_xpad_rumble_data))
@@ -70,16 +90,13 @@ bool xid_get_report(USB_XboxGamepad_OutReport_t *report, uint16_t len)
     return true;
 }
 
-bool xid_send_report_ready()
+bool xid_duke_send_report_ready()
 {
     return (tud_ready() && !usbd_edpt_busy(TUD_OPT_RHPORT, ep_in));
 }
 
-bool xid_send_report(USB_XboxGamepad_InReport_t *report, uint16_t len)
+bool xid_duke_send_report(USB_XboxGamepad_InReport_t *report, uint16_t len)
 {
-    if (len > ep_in_size)
-        return false;
-
     if (len != sizeof(_xpad_data))
         return false;
 
@@ -93,26 +110,34 @@ bool xid_send_report(USB_XboxGamepad_InReport_t *report, uint16_t len)
     memcpy(&_xpad_data, report, len);
 
     //Send it to the host
-    memcpy(epin_buf, report, len);
-    return usbd_edpt_xfer(TUD_OPT_RHPORT, ep_in, epin_buf, len);
+    return usbd_edpt_xfer(TUD_OPT_RHPORT, ep_in, (uint8_t *)&_xpad_data, len);
 }
 
-static bool xid_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes)
+static bool duke_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes)
 {
     (void)rhport;
-    (void)result;
-    (void)xferred_bytes;
+
+    if (result != XFER_RESULT_SUCCESS)
+    {
+        return true;
+    }
 
     //Packet received on ep out pipe. Should be a rumble command
     if (ep_addr == ep_out && xferred_bytes == sizeof(USB_XboxGamepad_OutReport_t))
     {
-        memcpy(&_xpad_rumble_data, epout_buf, 6);
+        memcpy(&_xpad_rumble_data, epout_buf, sizeof(USB_XboxGamepad_OutReport_t));
     }
+
     return true;
 }
 
-bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request)
+bool duke_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request)
 {
+    if (request->wIndex != ITF_NUM_XID_DUKE)
+    {
+        return false;
+    }
+
     if (request->bmRequestType == 0xC1 && request->bRequest == 0x06 && request->wValue == 0x4200)
     {
         if (stage == CONTROL_STAGE_SETUP)
@@ -140,6 +165,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
     //Get HID Report
     else if (request->bmRequestType == 0xA1 && request->bRequest == 0x01 && request->wValue == 0x0100)
     {
+        TU_LOG1("Get HID Report\r\n");
         if (stage == CONTROL_STAGE_SETUP)
         {
             tud_control_xfer(rhport, request, (void *)&_xpad_data, sizeof(_xpad_data));
@@ -171,50 +197,20 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
     return true;
 }
 
-bool tud_vendor_control_complete_cb(uint8_t rhport, tusb_control_request_t const *request)
+static const usbd_class_driver_t const xid_duke_driver =
 {
-    (void)rhport;
-    (void)request;
-    return true;
-}
-
-//Invoked when received GET DEVICE DESCRIPTOR
-//Application return pointer to descriptor
-uint8_t const *tud_descriptor_device_cb(void)
-{
-    return (uint8_t const *)&DUKE_DESC_DEVICE;
-}
-
-uint8_t const *tud_descriptor_configuration_cb(uint8_t index)
-{
-    (void)index;
-    return DUKE_DESC_CONFIGURATION;
-}
-
-uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid)
-{
-    (void)index;
-    (void)langid;
-
-    return NULL;
-}
-
-static const usbd_class_driver_t const xid_driver =
-    {
 #if CFG_TUSB_DEBUG >= 2
-        .name = "XID",
+    .name = "XID - Duke",
 #endif
-        .init = xid_init,
-        .reset = xid_reset,
-        .open = xid_open,
-        .control_xfer_cb = tud_vendor_control_xfer_cb,
-        .xfer_cb = xid_xfer_cb,
-        .sof = NULL};
+    .init = duke_init,
+    .reset = duke_reset,
+    .open = duke_open,
+    .control_xfer_cb = duke_control_xfer_cb,
+    .xfer_cb = duke_xfer_cb,
+    .sof = NULL
+};
 
-usbd_class_driver_t const *usbd_app_driver_get_cb(uint8_t *driver_count)
+const usbd_class_driver_t *duke_get_driver()
 {
-    *driver_count = *driver_count + 1;
-    return &xid_driver;
+    return &xid_duke_driver;
 }
-
-#endif

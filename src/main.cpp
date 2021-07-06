@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "USBHost_t36.h"
 #include "tusb.h"
+#include "xid.h"
 #include "printf.h"
 
 #if ((XID_XMU + XID_DUKE + XID_STEELBATTALION + XID_XREMOTE) == 0)

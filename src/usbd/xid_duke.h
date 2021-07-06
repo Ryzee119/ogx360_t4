@@ -7,7 +7,8 @@ extern "C"
 #endif
 
 #include <stdint.h>
-#include "tusb.h"
+#include <tusb.h>
+#include <device/usbd_pvt.h>
 
 /* Digital Button Masks */
 #define XID_DUP (1 << 0)
@@ -47,65 +48,30 @@ typedef struct __attribute__((packed))
     uint16_t rValue;
 } USB_XboxGamepad_OutReport_t;
 
-static const tusb_desc_device_t DUKE_DESC_DEVICE =
-    {
-        .bLength = sizeof(tusb_desc_device_t),
-        .bDescriptorType = TUSB_DESC_DEVICE,
-        .bcdUSB = 0x0110,
-        .bDeviceClass = 0x00,
-        .bDeviceSubClass = 0x00,
-        .bDeviceProtocol = 0x00,
-        .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
+typedef struct
+{
+  uint8_t itf_num;
+  uint8_t ep_in;
+  uint8_t ep_out;
+  CFG_TUSB_MEM_ALIGN USB_XboxGamepad_InReport_t in;
+  CFG_TUSB_MEM_ALIGN USB_XboxGamepad_OutReport_t out;
+  CFG_TUSB_MEM_ALIGN uint8_t epout_buf[32];
+} duke_interface_t;
 
-        .idVendor = 0x045E,
-        .idProduct = 0x0289,
-        .bcdDevice = 0x0121,
+#if (XID_DUKE >= 1)
+#define TUD_XID_DUKE_DESC_LEN  (9+7+7)
+#else
+#define TUD_XID_DUKE_DESC_LEN  (0)
+#endif
 
-        .iManufacturer = 0x00,
-        .iProduct = 0x00,
-        .iSerialNumber = 0x00,
-
-        .bNumConfigurations = 0x01
-};
-
-static const uint8_t DUKE_DESC_CONFIGURATION[] =
-    {
-        0x09,       //bLength
-        0x02,       //bDescriptorType
-        0x20, 0x00, //wTotalLength
-        0x01,       //bNumInterfaces
-        0x01,       //bConfigurationValue
-        0x00,       //iConfiguration
-        0x80,       //bmAttributes
-        0xFA,       //bMaxPower
-
-        //Interface Descriptor
-        0x09, //bLength
-        0x04, //bDescriptorType
-        0x00, //bInterfaceNumber
-        0x00, //bAlternateSetting
-        0x02, //bNumEndPoints
-        0x58, //bInterfaceClass
-        0x42, //bInterfaceSubClass
-        0x00, //bInterfaceProtocol
-        0x00, //iInterface
-
-        //Endpoint Descriptor
-        0x07,       //bLength
-        0x05,       //bDescriptorType
-        0x81,       //bEndpointAddress (IN endpoint 1)
-        0x03,       //bmAttributes (Transfer: Interrupt / Synch: None / Usage: Data)
-        0x20, 0x00, //wMaxPacketSize (1 x 32 bytes)
-        0x04,       //bInterval (4 frames)
-
-        //Endpoint Descriptor
-        0x07,       //bLength
-        0x05,       //bDescriptorType
-        0x02,       //bEndpointAddress (IN endpoint 1)
-        0x03,       //bmAttributes (Transfer: Interrupt / Synch: None / Usage: Data)
-        0x20, 0x00, //wMaxPacketSize (1 x 32 bytes)
-        0x04        //bInterval (4 frames)
-};
+#define TUD_XID_DUKE_DESCRIPTOR(_itfnum, _stridx, _epout, _epin) \
+  /* Interface */\
+  9, TUSB_DESC_INTERFACE, _itfnum, 0, 2, XID_INTERFACE_CLASS, XID_INTERFACE_SUBCLASS, 0x00, _stridx,\
+  /* Endpoint In */\
+  7, TUSB_DESC_ENDPOINT, _epin, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(32), 4, \
+  /* Endpoint Out */\
+  7, TUSB_DESC_ENDPOINT, _epout, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(32), 4
+  
 
 static const uint8_t DUKE_DESC_XID[] = {
     0x10,
@@ -136,9 +102,10 @@ static const uint8_t DUKE_CAPABILITIES_OUT[] = {
     0xFF, 0xFF, 0xFF, 0xFF
 };
 
-bool xid_send_report_ready(void);
-bool xid_send_report(USB_XboxGamepad_InReport_t *report, uint16_t len);
-bool xid_get_report(USB_XboxGamepad_OutReport_t *report, uint16_t len);
+const usbd_class_driver_t *duke_get_driver();
+bool xid_duke_send_report_ready(void);
+bool xid_duke_send_report(USB_XboxGamepad_InReport_t *report, uint16_t len);
+bool xid_duke_get_report(USB_XboxGamepad_OutReport_t *report, uint16_t len);
 
 #ifdef __cplusplus
 }

@@ -167,9 +167,9 @@ static const uint8_t STEELBATTALION_DESC_XID[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-bool xid_send_report_ready(void);
-bool xid_send_report(USB_SteelBattalion_InReport_t *report, uint16_t len);
-bool xid_get_report(USB_SteelBattalion_OutReport_t *report, uint16_t len);
+bool xid_sb_send_report_ready(void);
+bool xid_sb_send_report(USB_SteelBattalion_InReport_t *report, uint16_t len);
+bool xid_sb_get_report(USB_SteelBattalion_OutReport_t *report, uint16_t len);
 
 #ifdef __cplusplus
 }
