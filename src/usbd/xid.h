@@ -13,9 +13,6 @@ extern "C"
 #include "xid_steelbattalion.h"
 #include "xid_xmu.h"
 
-#define XID_INTERFACE_CLASS 0x58
-#define XID_INTERFACE_SUBCLASS 0x42
-
 static const tusb_desc_device_t XID_DESC_DEVICE =
 {
     .bLength = sizeof(tusb_desc_device_t),
@@ -36,6 +33,27 @@ static const tusb_desc_device_t XID_DESC_DEVICE =
 
     .bNumConfigurations = 0x01
 };
+
+#define XID_INTERFACE_CLASS 0x58
+#define XID_INTERFACE_SUBCLASS 0x42
+
+typedef enum
+{
+  XID_TYPE_GAMECONTROLLER,
+  XID_TYPE_STEELBATTALION,
+  XID_TYPE_XREMOTE,
+} xid_type_t;
+
+typedef struct
+{
+    uint8_t itf_num;
+    xid_type_t type;
+    uint8_t ep_in;
+    uint8_t ep_out;
+    CFG_TUSB_MEM_ALIGN uint8_t ep_out_buff[XID_MAX_PACKET_SIZE];
+    CFG_TUSB_MEM_ALIGN uint8_t in[XID_MAX_PACKET_SIZE];
+    CFG_TUSB_MEM_ALIGN uint8_t out[XID_MAX_PACKET_SIZE];
+} xid_interface_t;
 
 enum
 {
@@ -77,6 +95,15 @@ static uint8_t const XID_DESC_CONFIGURATION[] =
     TUD_XID_DUKE_DESCRIPTOR(ITF_NUM_XID_DUKE, 0, ITF_NUM_XID_DUKE + 2, 0x80 | (ITF_NUM_XID_DUKE + 1))
 #endif
 };
+
+bool xid_get_report(uint8_t index, void *report, uint16_t len);
+bool xid_send_report_ready(uint8_t index);
+bool xid_send_report(uint8_t index, void *report, uint16_t len);
+const usbd_class_driver_t *xid_get_driver();
+
+bool duke_control_xfer(xid_interface_t *p_xid, uint8_t stage, tusb_control_request_t const *request);
+bool steelbattalion_control_xfer(xid_interface_t *p_xid, uint8_t stage, tusb_control_request_t const *request);
+bool xremote_control_xfer(xid_interface_t *p_xid, uint8_t stage, tusb_control_request_t const *request);
 
 #ifdef __cplusplus
 }

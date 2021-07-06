@@ -1,5 +1,5 @@
-#ifndef XID_DUKE_H_
-#define XID_DUKE_H_
+#ifndef XID_STEELBATTALION_H_
+#define XID_STEELBATTALION_H_
 
 #ifdef __cplusplus
 extern "C"

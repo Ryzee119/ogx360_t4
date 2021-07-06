@@ -10,6 +10,7 @@ extern "C"
 #include <tusb.h>
 #include <device/usbd_pvt.h>
 
+#define XID_MAX_PACKET_SIZE 32
 /* Digital Button Masks */
 #define XID_DUP (1 << 0)
 #define XID_DDOWN (1 << 1)
@@ -47,16 +48,6 @@ typedef struct __attribute__((packed))
     uint16_t lValue;
     uint16_t rValue;
 } USB_XboxGamepad_OutReport_t;
-
-typedef struct
-{
-  uint8_t itf_num;
-  uint8_t ep_in;
-  uint8_t ep_out;
-  CFG_TUSB_MEM_ALIGN USB_XboxGamepad_InReport_t in;
-  CFG_TUSB_MEM_ALIGN USB_XboxGamepad_OutReport_t out;
-  CFG_TUSB_MEM_ALIGN uint8_t epout_buf[32];
-} duke_interface_t;
 
 #if (XID_DUKE >= 1)
 #define TUD_XID_DUKE_DESC_LEN  (9+7+7)
@@ -101,11 +92,6 @@ static const uint8_t DUKE_CAPABILITIES_OUT[] = {
     0x06,
     0xFF, 0xFF, 0xFF, 0xFF
 };
-
-const usbd_class_driver_t *duke_get_driver();
-bool xid_duke_send_report_ready(void);
-bool xid_duke_send_report(USB_XboxGamepad_InReport_t *report, uint16_t len);
-bool xid_duke_get_report(USB_XboxGamepad_OutReport_t *report, uint16_t len);
 
 #ifdef __cplusplus
 }
