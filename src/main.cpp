@@ -4,33 +4,25 @@
 #include "xid.h"
 #include "printf.h"
 
-#if ((XID_XMU + XID_DUKE + XID_STEELBATTALION + XID_XREMOTE) == 0)
-#error You must enable ateast one device
-#endif
-
-#if ((XID_XMU + XID_DUKE + XID_STEELBATTALION + XID_XREMOTE) > 1)
-#error You can only enable one USB device at a time.
-#endif
-
 //Forward declarations
 #if (XID_DUKE >= 1)
-void duke_init(void);
-void duke_task(KeyboardController *kb, MouseController *m, JoystickController *joy);
+void duke_init(KeyboardController *kb, MouseController *m, JoystickController *joy);
+void duke_task(uint8_t type_index, KeyboardController *kb, MouseController *m, JoystickController *joy);
 #endif
 
 #if (XID_STEELBATTALION >= 1)
 void steelbattalion_init(KeyboardController *kb, MouseController *m, JoystickController *joy);
-void steelbattalion_task(KeyboardController *kb, MouseController *m, JoystickController *joy);
-#endif
-
-#if (XID_XMU >= 1)
-void xmu_init(void);
-void xmu_task(void);
+void steelbattalion_task(uint8_t type_index, KeyboardController *kb, MouseController *m, JoystickController *joy);
 #endif
 
 #if (XID_XREMOTE >= 1)
-void xremote_init(void);
-void xremote_task(KeyboardController *kb, MouseController *m, JoystickController *joy);
+void xremote_init(KeyboardController *kb, MouseController *m, JoystickController *joy);
+void xremote_task(uint8_t type_index, KeyboardController *kb, MouseController *m, JoystickController *joy);
+#endif
+
+#if (MSC_XMU >= 1)
+void xmu_init(void);
+void xmu_task(uint8_t type_index);
 #endif
 
 //USB Host Interface
@@ -61,19 +53,19 @@ void setup()
     pinMode(LED_BUILTIN, OUTPUT);
 
 #if (XID_DUKE >= 1)
-    duke_init();
+    duke_init(&keyboard, &mouse, &joy);
 #endif
 
 #if (XID_STEELBATTALION >= 1)
     steelbattalion_init(&keyboard, &mouse, &joy);
 #endif
 
-#if (XID_XMU >= 1)
-    xmu_init();
+#if (XID_XREMOTE >= 1)
+    xremote_init(&keyboard, &mouse, &joy);
 #endif
 
-#if (XID_XREMOTE >= 1)
-    xremote_init();
+#if (MSC_XMU >= 1)
+    xmu_init();
 #endif
 
     //USB Device Interface Init
@@ -99,19 +91,19 @@ void loop()
     tud_task();
 
 #if (XID_DUKE >= 1)
-    duke_task(&keyboard, &mouse, &joy);
+    duke_task(0, &keyboard, &mouse, &joy);
 #endif
 
 #if (XID_STEELBATTALION >= 1)
-    steelbattalion_task(&keyboard, &mouse, &joy);
-#endif
-
-#if (XID_XMU >= 1)
-    xmu_task();
+    steelbattalion_task(0, &keyboard, &mouse, &joy);
 #endif
 
 #if (XID_XREMOTE >= 1)
-    xremote_task(&keyboard, &mouse, &joy);
+    xremote_task(0, &keyboard, &mouse, &joy);
+#endif
+
+#if (MSC_XMU >= 1)
+    xmu_task(0);
 #endif
 
 }

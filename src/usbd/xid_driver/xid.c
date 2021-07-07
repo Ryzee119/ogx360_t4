@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include "xid.h"
-#include "xid.h"
+
+bool duke_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request, xid_interface_t *p_xid);
+bool steelbattalion_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request, xid_interface_t *p_xid);
+bool xremote_control_xfer(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request, xid_interface_t *p_xid);
 
 #define MAX_XIDS (XID_DUKE + XID_STEELBATTALION + XID_XREMOTE)
 
@@ -12,6 +15,12 @@ static inline int8_t get_index_by_itfnum(uint8_t itf_num)
     {
         if (itf_num == _xid_itf[i].itf_num)
             return i;
+        //Xremote has two interfaces. Handle is separately.
+        if (_xid_itf[i].type == XID_TYPE_XREMOTE)
+        {
+           if (itf_num == _xid_itf[i].itf_num + 1)
+            return i; 
+        }
     }
     return -1;
 }
@@ -48,7 +57,7 @@ static void xid_init(void)
     {
         _xid_itf[i].type = (i < (XID_DUKE)) ? XID_TYPE_GAMECONTROLLER :
                            (i < (XID_DUKE + XID_STEELBATTALION)) ? XID_TYPE_STEELBATTALION :
-                           (i < (XID_DUKE + XID_STEELBATTALION + XID_XREMOTE)) ? XID_TYPE_XREMOTE;
+                           (i < (XID_DUKE + XID_STEELBATTALION + XID_XREMOTE)) ? XID_TYPE_XREMOTE : 0xFF;
     }
 }
 
@@ -66,9 +75,11 @@ static uint16_t xid_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, 
     TU_ASSERT(p_xid != NULL, 0);
 
     uint16_t const drv_len = (p_xid->type == XID_TYPE_GAMECONTROLLER) ? TUD_XID_DUKE_DESC_LEN :
-                             (p_xid->type == XID_TYPE_STEELBATTALION) ? TUD_XID_STEELBATTALION_DESC_LEN :
-                             (p_xid->type == XID_TYPE_XREMOTE)        ? TUD_XID_XREMOTE_DESC_LEN;
+                             (p_xid->type == XID_TYPE_STEELBATTALION) ? TUD_XID_SB_DESC_LEN :
+                             (p_xid->type == XID_TYPE_XREMOTE)        ? TUD_XID_XREMOTE_DESC_LEN : 0;
     TU_ASSERT(max_len >= drv_len, 0);
+
+    p_xid->itf_num = itf_desc->bInterfaceNumber;
 
     tusb_desc_endpoint_t *ep_desc;
     ep_desc = (tusb_desc_endpoint_t *)tu_desc_next(itf_desc);
@@ -91,6 +102,21 @@ static uint16_t xid_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, 
     return drv_len;
 }
 
+int8_t xid_get_index_by_type(uint8_t type_index, xid_type_t type)
+{
+    uint8_t _type_index = 0;
+    for (uint8_t i = 0; i < MAX_XIDS; i++)
+    {
+        if (_xid_itf[i].type == type)
+        {
+            if (_type_index == type_index)
+                return i;
+            _type_index++;
+        }
+    }
+    return -1;
+}
+
 bool xid_get_report(uint8_t index, void *report, uint16_t len)
 {
     TU_VERIFY(index < MAX_XIDS, false);
@@ -103,7 +129,7 @@ bool xid_get_report(uint8_t index, void *report, uint16_t len)
     //Most games send to control pipe, but some send to out pipe. THPSX2 atleast
     if (tud_ready() && !usbd_edpt_busy(TUD_OPT_RHPORT, _xid_itf[index].ep_out))
     {
-        TU_ASSERT(usbd_edpt_xfer(TUD_OPT_RHPORT, _xid_itf[index].ep_out, _xid_itf[index].ep_out_buff, len);
+        usbd_edpt_xfer(TUD_OPT_RHPORT, _xid_itf[index].ep_out, _xid_itf[index].ep_out_buff, len);
     }
     return true;
 }
@@ -114,11 +140,12 @@ bool xid_send_report_ready(uint8_t index)
     TU_VERIFY(_xid_itf[index].ep_in != 0, false);
     return (tud_ready() && !usbd_edpt_busy(TUD_OPT_RHPORT, _xid_itf[index].ep_in));
 }
-
 bool xid_send_report(uint8_t index, void *report, uint16_t len)
 {
     TU_VERIFY(len < XID_MAX_PACKET_SIZE, false);
-    TU_VERIFY(xid+_send_report_ready(index), false);
+    TU_VERIFY(index < MAX_XIDS, false);
+    TU_VERIFY(_xid_itf[index].ep_in != 0, false);
+    TU_VERIFY(xid_send_report_ready(index), false);
 
     if (tud_suspended())
         tud_remote_wakeup();
@@ -141,7 +168,7 @@ static bool xid_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, u
 
     if (ep_addr == _xid_itf[index].ep_out)
     {
-        memcpy(_xid_itf[index].out, epout_buf, xferred_bytes);
+        memcpy(_xid_itf[index].out, _xid_itf[index].ep_out_buff, min(xferred_bytes, sizeof( _xid_itf[index].ep_out_buff)));
     }
 
     return true;
@@ -155,16 +182,45 @@ bool xid_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t c
     TU_VERIFY(index != -1, false);
 
     bool ret = false;
+
+     //Get HID Report
+    if (request->bmRequestType == 0xA1 && request->bRequest == 0x01 && request->wValue == 0x0100)
+    {
+        if (stage == CONTROL_STAGE_SETUP)
+        {
+            TU_LOG1("Sending HID report on control pipe for index %02x\n", request->wIndex);
+            tud_control_xfer(rhport, request, _xid_itf[index].in, min(request->wLength, sizeof(_xid_itf[index].in)));
+        }
+        return true;
+    }
+
+    //Set HID Report
+    if (request->bmRequestType == 0x21 && request->bRequest == 0x09 && request->wValue == 0x0200 && request->wLength == 0x06)
+    {
+        if (stage == CONTROL_STAGE_SETUP)
+        {
+            //Host is sending a rumble command to control pipe. Queue receipt.
+            tud_control_xfer(rhport, request, _xid_itf[index].ep_out_buff, min(request->wLength, sizeof(_xid_itf[index].ep_out_buff)));
+        }
+        else if (stage == CONTROL_STAGE_ACK)
+        {
+            //Receipt complete. Copy data to rumble struct
+            TU_LOG1("Got HID report from control pipe for index %02x\n", request->wIndex);
+            memcpy(_xid_itf[index].out, _xid_itf[index].ep_out_buff, min(request->wLength, sizeof(_xid_itf[index].out)));
+        }
+        return true;
+    }
+
     switch (_xid_itf[index].type)
     {
     case XID_TYPE_GAMECONTROLLER:
-        ret = duke_control_xfer(&_xid_itf[index], stage, request);
+        ret = duke_control_xfer(rhport, stage, request, &_xid_itf[index]);
         break;
     case XID_TYPE_STEELBATTALION:
-        ret = steelbattalion_control_xfer(&_xid_itf[index], stage, request);
+        ret = steelbattalion_control_xfer(rhport, stage, request, &_xid_itf[index]);
         break;
     case XID_TYPE_XREMOTE:
-        ret = xremote_control_xfer(&_xid_itf[index], stage, request);
+        ret = xremote_control_xfer(rhport, stage, request, &_xid_itf[index]);
         break;
     default:
         break;
@@ -172,8 +228,8 @@ bool xid_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t c
 
     if (ret == false)
     {
-        TU_LOG1("STALL: index: %d bmRequestType: %02x, bRequest: %02x, wValue: %04x\n",
-                index,
+        TU_LOG1("STALL: wIndex: %02x bmRequestType: %02x, bRequest: %02x, wValue: %04x\n",
+                request->wIndex,
                 request->bmRequestType,
                 request->bRequest,
                 request->wValue);

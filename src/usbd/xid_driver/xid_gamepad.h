@@ -8,9 +8,7 @@ extern "C"
 
 #include <stdint.h>
 #include <tusb.h>
-#include <device/usbd_pvt.h>
 
-#define XID_MAX_PACKET_SIZE 32
 /* Digital Button Masks */
 #define XID_DUP (1 << 0)
 #define XID_DDOWN (1 << 1)
@@ -49,20 +47,15 @@ typedef struct __attribute__((packed))
     uint16_t rValue;
 } USB_XboxGamepad_OutReport_t;
 
-#if (XID_DUKE >= 1)
 #define TUD_XID_DUKE_DESC_LEN  (9+7+7)
-#else
-#define TUD_XID_DUKE_DESC_LEN  (0)
-#endif
 
-#define TUD_XID_DUKE_DESCRIPTOR(_itfnum, _stridx, _epout, _epin) \
+#define TUD_XID_DUKE_DESCRIPTOR(_itfnum, _epout, _epin) \
   /* Interface */\
-  9, TUSB_DESC_INTERFACE, _itfnum, 0, 2, XID_INTERFACE_CLASS, XID_INTERFACE_SUBCLASS, 0x00, _stridx,\
+  9, TUSB_DESC_INTERFACE, _itfnum, 0, 2, XID_INTERFACE_CLASS, XID_INTERFACE_SUBCLASS, 0x00, 0x00,\
   /* Endpoint In */\
   7, TUSB_DESC_ENDPOINT, _epin, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(32), 4, \
   /* Endpoint Out */\
   7, TUSB_DESC_ENDPOINT, _epout, TUSB_XFER_INTERRUPT, U16_TO_U8S_LE(32), 4
-  
 
 static const uint8_t DUKE_DESC_XID[] = {
     0x10,
@@ -85,7 +78,8 @@ static const uint8_t DUKE_CAPABILITIES_IN[] = {
     0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF,
-    0xFF, 0xFF, 0xFF};
+    0xFF, 0xFF, 0xFF
+};
 
 static const uint8_t DUKE_CAPABILITIES_OUT[] = {
     0x00,

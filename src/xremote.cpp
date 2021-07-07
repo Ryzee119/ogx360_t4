@@ -1,13 +1,10 @@
 #include <Arduino.h>
-#include "tusb.h"
-#include "xid_remote.h"
+#include <tusb.h>
+#include "xid.h"
 #include "printf.h"
 #include "USBHost_t36.h"
 
-#if (XID_XREMOTE >= 1)
-
 //USB Device Interface
-static USB_XboxRemote_InReport_t xremote_data;
 static uint32_t milli_timer = 0;
 static uint8_t *xremote_firmware;
 
@@ -20,11 +17,8 @@ static uint8_t *xremote_firmware;
 static File xremote_fw_file;
 static bool sd_ok = 0;
 
-void xremote_init()
+void xremote_init(KeyboardController *kb, MouseController *m, JoystickController *joy)
 {
-    memset(&xremote_data, 0x00, sizeof(xremote_data));
-    xremote_data.bLength = sizeof(xremote_data);
-
     //Read DVD dongle firmware blob from SD card.
     sd_ok = SD.begin(BUILTIN_SDCARD);
     if (!sd_ok)
@@ -75,40 +69,46 @@ extern "C" uint8_t *xremote_get_rom()
     return xremote_firmware;
 }
 
-void xremote_task(KeyboardController *kb, MouseController *m, JoystickController *joy)
+void xremote_task(uint8_t type_index, KeyboardController *kb, MouseController *m, JoystickController *joy)
 {
-    //Map keyboard and mouse to duke translater
     (void)kb;
     (void)m;
 
-    uint32_t timeElapsed = millis() - milli_timer;
-    if (xid_send_report_ready() && joy->available() && timeElapsed > 40)
-    {
-        milli_timer = millis();
-        uint32_t _buttons = joy->getButtons();
-        joy->joystickDataClear();
+    uint8_t index = xid_get_index_by_type(type_index, XID_TYPE_XREMOTE);
 
-        memset(&xremote_data, 0x00, sizeof(xremote_data));
-        xremote_data.bLength = sizeof(xremote_data);
-        xremote_data.timeElapsed = timeElapsed;
+    USB_XboxRemote_InReport_t xremote_data;
+    memset(&xremote_data, 0x00, sizeof(xremote_data));
+
+    uint32_t _buttons = joy->getButtons();
+    joy->joystickDataClear();
+
+    uint32_t timeElapsed = millis() - milli_timer;
+    if (xid_send_report_ready(index) && timeElapsed > 64)
+    {
+        //FIXME: This mapping is incomplete and just for testing
         switch (joy->joystickType())
         {
         case JoystickController::XBOX360:
         case JoystickController::XBOX360_WIRED:
-            if (_buttons & (1 << 0)) xremote_data.buttonCode = 0x0AA6;
-            if (_buttons & (1 << 1)) xremote_data.buttonCode = 0x0AA7;
-            if (_buttons & (1 << 2)) xremote_data.buttonCode = 0x0AA9;
-            if (_buttons & (1 << 3)) xremote_data.buttonCode = 0x0AA8;
+            if (_buttons & (1 << 0)) xremote_data.buttonCode = XREMOTE_UP;
+            if (_buttons & (1 << 1)) xremote_data.buttonCode = XREMOTE_DOWN;
+            if (_buttons & (1 << 2)) xremote_data.buttonCode = XREMOTE_LEFT;
+            if (_buttons & (1 << 3)) xremote_data.buttonCode = XREMOTE_RIGHT;
             break;
         
         case JoystickController::XBOXDUKE:
-            if (_buttons & (1 << 0)) xremote_data.buttonCode = 0x0AA6;
-            if (_buttons & (1 << 1)) xremote_data.buttonCode = 0x0AA7;
-            if (_buttons & (1 << 2)) xremote_data.buttonCode = 0x0AA9;
-            if (_buttons & (1 << 3)) xremote_data.buttonCode = 0x0AA8;
+            if (_buttons & (1 << 0)) xremote_data.buttonCode = XREMOTE_UP;
+            if (_buttons & (1 << 1)) xremote_data.buttonCode = XREMOTE_DOWN;
+            if (_buttons & (1 << 2)) xremote_data.buttonCode = XREMOTE_LEFT;
+            if (_buttons & (1 << 3)) xremote_data.buttonCode = XREMOTE_RIGHT;
             break;
 
         case JoystickController::XBOXONE:
+            if (_buttons & (1 << 8))  xremote_data.buttonCode = XREMOTE_UP;
+            if (_buttons & (1 << 9))  xremote_data.buttonCode = XREMOTE_DOWN;
+            if (_buttons & (1 << 10)) xremote_data.buttonCode = XREMOTE_LEFT;
+            if (_buttons & (1 << 11)) xremote_data.buttonCode = XREMOTE_RIGHT;
+            break;
         case JoystickController::PS4:
         case JoystickController::PS3:
         case JoystickController::PS3_MOTION:
@@ -117,11 +117,16 @@ void xremote_task(KeyboardController *kb, MouseController *m, JoystickController
             break;
         }
 
-        if (!xid_send_report(&xremote_data, sizeof(xremote_data)))
+        if (xremote_data.buttonCode == 0x0000)
+            return;
+
+        xremote_data.bLength = sizeof(xremote_data);
+        xremote_data.timeElapsed = timeElapsed;
+        milli_timer = millis();
+
+        if (!xid_send_report(index, &xremote_data, sizeof(xremote_data)))
         {
             printf("[USBD] Error sending OUT report\r\n");
         }
     }
 }
-
-#endif
