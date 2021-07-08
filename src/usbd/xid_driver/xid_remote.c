@@ -1,6 +1,5 @@
 #include <Arduino.h>
-#include "xid.h"
-#include "xid_remote.h"
+#include "usbd_top.h"
 
 uint8_t *xremote_get_rom();
 

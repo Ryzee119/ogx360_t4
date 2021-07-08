@@ -2,7 +2,6 @@
 #include <tusb.h>
 #include <device/usbd_pvt.h>
 #include "usbd_top.h"
-#include "xid.h"
 
 uint8_t const *tud_descriptor_device_cb(void)
 {

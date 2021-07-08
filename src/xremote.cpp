@@ -1,71 +1,52 @@
 #include <Arduino.h>
 #include <tusb.h>
+#include <fatfs/ff.h>
+#include <USBHost_t36.h>
 #include "xid.h"
-#include "printf.h"
-#include "USBHost_t36.h"
-
-//USB Device Interface
-static uint32_t milli_timer = 0;
-static uint8_t *xremote_firmware;
-
-#include <SD.h>
-#include <SPI.h>
 
 #ifndef DONGLEROM_FILENAME
 #define DONGLEROM_FILENAME "dvd_rom.bin" //13 character limit
 #endif
-static File xremote_fw_file;
+static FIL xremote_fw_file;
+static uint8_t *xremote_firmware;
+static uint32_t milli_timer = 0;
 static bool sd_ok = 0;
 
 void xremote_init(KeyboardController *kb, MouseController *m, JoystickController *joy)
 {
-    //Read DVD dongle firmware blob from SD card.
-    sd_ok = SD.begin(BUILTIN_SDCARD);
-    if (!sd_ok)
-    {
-        printf("Error: Could not initialise SD card\n");
-        return;
-    }
+    FRESULT res; UINT br;
 
-    xremote_fw_file = SD.open(DONGLEROM_FILENAME);
-    if (!xremote_fw_file)
+    res = f_open(&xremote_fw_file, DONGLEROM_FILENAME, FA_READ);
+    if (res != FR_OK)
     {
-        printf("Error: Could not open %s\n", DONGLEROM_FILENAME);
+        TU_LOG1("XREMOTE: Could not open %s\n", DONGLEROM_FILENAME);
+        xremote_firmware = NULL;
         sd_ok = false;
         return;
     }
 
-    int32_t file_size = xremote_fw_file.size();
-    xremote_firmware = (uint8_t *)malloc(file_size);
-    if (!xremote_firmware)
+    xremote_firmware = (uint8_t *)malloc(f_size(&xremote_fw_file));
+    if (xremote_firmware == NULL)
     {
-        printf("Error: Could not malloc %d bytes for ROM\n", file_size);
+        TU_LOG1("XREMOTE: Could not malloc %d bytes for ROM\n", f_size(&xremote_fw_file));
         sd_ok = false;
         return;
     }
 
-    int bytes_read = 0;
-    while (xremote_fw_file.available())
+    res = f_read(&xremote_fw_file, xremote_firmware, f_size(&xremote_fw_file), &br);
+    if (res != FR_OK || br != f_size(&xremote_fw_file))
     {
-        xremote_firmware[bytes_read] = xremote_fw_file.read();
-        bytes_read++;
-    }
-    if (bytes_read != file_size)
-    {
-        printf("Error: Expected %d bytes from file but only read %d bytes\n", file_size, bytes_read);
+        TU_LOG1("XREMOTE: Could not read %s with error %i\n", DONGLEROM_FILENAME, res);
         sd_ok = false;
         return;
     }
 
-    printf("Read %s for %d bytes ok!\n", DONGLEROM_FILENAME, bytes_read);
+    TU_LOG1("XREMOTE: Reading %s for %u bytes ok!\n", DONGLEROM_FILENAME, br);
+    sd_ok = true;
 }
 
 extern "C" uint8_t *xremote_get_rom()
 {
-    if (!sd_ok)
-    {
-        return NULL;
-    }
     return xremote_firmware;
 }
 
@@ -126,7 +107,7 @@ void xremote_task(uint8_t type_index, KeyboardController *kb, MouseController *m
 
         if (!xid_send_report(index, &xremote_data, sizeof(xremote_data)))
         {
-            printf("[USBD] Error sending OUT report\r\n");
+            TU_LOG1("XREMOTE: Error sending OUT report\r\n");
         }
     }
 }

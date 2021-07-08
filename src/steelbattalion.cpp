@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include <tusb.h>
+#include <USBHost_t36.h>
 #include "xid.h"
-#include "printf.h"
-#include "USBHost_t36.h"
 
 //USB Device Interface
 static USB_SteelBattalion_InReport_t sb_data;
@@ -149,7 +148,7 @@ void steelbattalion_task(uint8_t type_index, KeyboardController *kb, MouseContro
 
         if (!xid_send_report(index, &sb_data, sizeof(sb_data)))
         {
-            printf("[USBD] Error sending OUT report\r\n");
+            TU_LOG1("[USBD] Error sending OUT report\r\n");
         }
     }
 

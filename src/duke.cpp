@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include <tusb.h>
+#include <USBHost_t36.h>
 #include "xid.h"
-#include "printf.h"
-#include "USBHost_t36.h"
 
 void duke_init(KeyboardController *kb, MouseController *m, JoystickController *joy)
 {
@@ -163,7 +162,7 @@ void duke_task(uint8_t type_index, KeyboardController *kb, MouseController *m, J
 
         if (!xid_send_report(index, &xpad_data, sizeof(xpad_data)))
         {
-            printf("[USBD] Error sending OUT report\r\n");
+            TU_LOG1("[USBD] Error sending OUT report\r\n");
         }
     }
 

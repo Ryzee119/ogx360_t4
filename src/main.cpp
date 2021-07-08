@@ -1,8 +1,9 @@
 #include <Arduino.h>
-#include "USBHost_t36.h"
-#include "tusb.h"
-#include "xid.h"
-#include "printf.h"
+#include <tusb.h>
+#include <fatfs/ff.h>
+#include <USBHost_t36.h>
+#include <printf.h>
+#include "usbd_top.h"
 
 //Forward declarations
 #if (XID_DUKE >= 1)
@@ -47,10 +48,17 @@ void usbd_isr(void)
 void setup()
 {
     Serial1.begin(115200);
-    printf("ogx360_t4 Starting!\r\n");
+    printf("ogx360_t4 Starting!\n");
 
     //Set onboard LED to output
     pinMode(LED_BUILTIN, OUTPUT);
+
+    //Mount SD Card
+    static FATFS fs;
+    if (f_mount(&fs, "", 1) != FR_OK)
+    {
+        printf("ERROR: Could not mount SD Card\n");
+    }
 
 #if (XID_DUKE >= 1)
     duke_init(&keyboard, &mouse, &joy);
@@ -105,5 +113,4 @@ void loop()
 #if (MSC_XMU >= 1)
     xmu_task(0);
 #endif
-
 }
