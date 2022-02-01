@@ -68,11 +68,11 @@ extern "C"
 #define CFG_TUSB_OS OPT_OS_NONE
 
 #ifndef CFG_TUSB_MEM_SECTION
-#define CFG_TUSB_MEM_SECTION __attribute__((section(".dmabuffers")))
+#define CFG_TUSB_MEM_SECTION
 #endif
 
 #ifndef CFG_TUSB_MEM_ALIGN
-#define CFG_TUSB_MEM_ALIGN __attribute__((aligned(32)))
+#define CFG_TUSB_MEM_ALIGN __attribute__((aligned(4096)))
 #endif
 
   //--------------------------------------------------------------------

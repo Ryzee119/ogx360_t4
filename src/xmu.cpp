@@ -140,9 +140,9 @@ extern "C" bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool
     {
         TU_LOG1("Closing file\n");
         xmu_msc_file.flush();
-        xmu_msc_file.close();
-        ejected = true;
-        tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3a, 0x00);
+        //xmu_msc_file.close();
+        //ejected = true;
+        //tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3a, 0x00);
     }
     if (start == 1 && load_eject == 1)
     {
