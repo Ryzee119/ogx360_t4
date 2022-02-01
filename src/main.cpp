@@ -32,6 +32,7 @@ USBHIDParser hid(usbh);
 KeyboardController keyboard(usbh);
 MouseController mouse(usbh);
 JoystickController joy(usbh);
+RawHIDController raw_hid(usbh);
 
 void _putchar(char character)
 {
