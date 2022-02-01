@@ -157,7 +157,7 @@ extern "C" bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool
 extern "C" void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4])
 {
     (void)lun;
-    TU_LOG0("SCSI_CMD_INQUIRY\r\n");
+    TU_LOG2("SCSI_CMD_INQUIRY\r\n");
 
     const char vid[] = "Ryzee119";
     const char pid[] = "Mass Storage";
