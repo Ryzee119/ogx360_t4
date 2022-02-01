@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <tusb.h>
-#include <fatfs/ff.h>
 #include <USBHost_t36.h>
 #include <printf.h>
 #include "usbd_top.h"
@@ -52,13 +51,6 @@ void setup()
 
     //Set onboard LED to output
     pinMode(LED_BUILTIN, OUTPUT);
-
-    //Mount SD Card
-    static FATFS fs;
-    if (f_mount(&fs, "", 1) != FR_OK)
-    {
-        printf("ERROR: Could not mount SD Card\n");
-    }
 
 #if (XID_DUKE >= 1)
     duke_init(&keyboard, &mouse, &joy);
