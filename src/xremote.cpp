@@ -1,47 +1,56 @@
 #include <Arduino.h>
+#include <SD.h>
 #include <tusb.h>
-#include <fatfs/ff.h>
 #include <USBHost_t36.h>
 #include "xid.h"
 
 #ifndef DONGLEROM_FILENAME
 #define DONGLEROM_FILENAME "dvd_rom.bin" //13 character limit
 #endif
-static FIL xremote_fw_file;
+static FsFile xremote_fw_file;
 static uint8_t *xremote_firmware;
 static uint32_t milli_timer = 0;
 static bool sd_ok = 0;
 
 void xremote_init(KeyboardController *kb, MouseController *m, JoystickController *joy)
 {
-    FRESULT res; UINT br;
+    uint32_t b;
 
-    res = f_open(&xremote_fw_file, DONGLEROM_FILENAME, FA_READ);
-    if (res != FR_OK)
+    if (!SD.sdfs.begin(SdioConfig(FIFO_SDIO)))
     {
-        TU_LOG1("XREMOTE: Could not open %s\n", DONGLEROM_FILENAME);
-        xremote_firmware = NULL;
+        TU_LOG1("Error initialising SD card. Is it inserted and formatted correctly?\n");
         sd_ok = false;
         return;
     }
 
-    xremote_firmware = (uint8_t *)malloc(f_size(&xremote_fw_file));
+    if (SD.sdfs.exists(DONGLEROM_FILENAME))
+    {
+        xremote_fw_file = SD.sdfs.open(DONGLEROM_FILENAME, O_READ);
+        if (xremote_fw_file == false)
+        {
+            TU_LOG1("Error opening %s for WRITE\n");
+            sd_ok = false;
+            return;
+        }
+    }
+
+    xremote_firmware = (uint8_t *)malloc(xremote_fw_file.fileSize());
     if (xremote_firmware == NULL)
     {
-        TU_LOG1("XREMOTE: Could not malloc %d bytes for ROM\n", f_size(&xremote_fw_file));
+        TU_LOG1("XREMOTE: Could not malloc %d bytes for ROM\n", xremote_fw_file.fileSize());
         sd_ok = false;
         return;
     }
 
-    res = f_read(&xremote_fw_file, xremote_firmware, f_size(&xremote_fw_file), &br);
-    if (res != FR_OK || br != f_size(&xremote_fw_file))
+    b = xremote_fw_file.read(xremote_firmware, xremote_fw_file.fileSize());
+    if (b != xremote_fw_file.fileSize())
     {
-        TU_LOG1("XREMOTE: Could not read %s with error %i\n", DONGLEROM_FILENAME, res);
+        TU_LOG1("XREMOTE: Could not read %s\n", DONGLEROM_FILENAME);
         sd_ok = false;
         return;
     }
 
-    TU_LOG1("XREMOTE: Reading %s for %u bytes ok!\n", DONGLEROM_FILENAME, br);
+    TU_LOG1("XREMOTE: Reading %s for %u bytes ok!\n", DONGLEROM_FILENAME, b);
     sd_ok = true;
 }
 
