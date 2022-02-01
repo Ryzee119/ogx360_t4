@@ -19,11 +19,11 @@ Finally, hardly any soldering is required.
 | 1 | Teensy 4.1 | https://www.pjrc.com/store/teensy41.html |
 | 1 | USB Host Cable | https://www.pjrc.com/store/cable_usb_host_t36.html |
 | 1 | 0.1" Pin Header | https://www.pjrc.com/store/header_24x1.html |
-| 1 | Winbond W25Q128 SPI Flash (128Mbit) | (Only needed for XMU emulation) |
-| 1 | Xbox to MicroUSB | [ChimericSystems](https://chimericsystems.com/products/micro-usb-to-xbox-cable) or [Alibaba (Large MOQ!)](https://www.alibaba.com/product-detail/for-XBOX-MicroUSB-Cable-for-Xbox_62222784495.html) or DIY |
+| 1 | SD Card | For XMU emulation. Clean format FAT32. I had to use this https://www.sdcard.org/downloads/formatter/ on my old SD cards |
+| 1 | Xbox to MicroUSB | [ChimericSystems](https://chimericsystems.com/products/console-usb-adapter) or [Alibaba (Large MOQ!)](https://www.alibaba.com/product-detail/for-XBOX-MicroUSB-Cable-for-Xbox_62222784495.html) or DIY |
 
 ## Duke Controller Emulation: Supported Controllers
-- Bluetooth 8bitdo/compatible controllers via the [8BitDo Wireless USB Adapter](https://www.8bitdo.com/wireless-usb-adapter/)
+- Bluetooth 8bitdo/compatible controllers via the [8BitDo Wireless USB Adapter](https://www.8bitdo.com/wireless-usb-adapter/) or [Rev 2](https://www.8bitdo.com/wireless-usb-adapter-2/).
 - Wired 8bitdo controllers when they are started in X-input mode.
 - Xbox S/X Wired
 - Xbox One Wired (Genuine / PDP)
@@ -45,21 +45,14 @@ Finally, hardly any soldering is required.
 
 ## Compile
 ### CLI (Requires python and python-pip)
+Configure platformio.ini to enable XMU support or Steel Battation etc.
 ```
 git clone https://github.com/Ryzee119/ogx360_t4.git --recursive
 python -m pip install --upgrade pip
 pip install platformio
 cd ogx360_t4
-# Build XMU (memory unit) emulator using different memory interfaces
-platformio run -e XMU_FLASH
-platformio run -e XMU_SDCARD
-platformio run -e XMU_RAM_TEST_ONLY
-# Build controller translator
+# Build standard Duke interface
 platformio run -e DUKE
-# Build steel battalion translator
-platformio run -e STEELBATTALION
-# Build IR dongle translator
-platformio run -e XREMOTE
 ```
 ### Visual Studio Code
 * Download and install [Visual Studio Code](https://code.visualstudio.com/).
