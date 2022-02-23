@@ -33,7 +33,6 @@ Finally, hardly any soldering is required.
 
 ## Xbox Memory Unit Emulation (XMU): Supported Memory Interfaces
 - 256kB RAM disk for testing only.
-- 16MB Winbond W25Q128 SPI Flash. Requires soldering onto the designated Teensy4.1 footprint.
 - SD Card installed into the Teensy4.1 SD Card slot.
 
 ## Steel Battalion Controller Emulation: Supported Interfaces
